@@ -1,10 +1,10 @@
 package club.w0sv.sl3.web;
 
 import club.w0sv.grlevel3.PlaceFileWriter;
-import club.w0sv.sl3.AprsIconSupplier;
+//import club.w0sv.sl3.AprsIconSupplier;
 import club.w0sv.sl3.AprsService;
 import club.w0sv.sl3.TrackingEntry;
-import club.w0sv.util.IconIdentifier;
+//import club.w0sv.util.IconIdentifier;
 import club.w0sv.util.XYPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
