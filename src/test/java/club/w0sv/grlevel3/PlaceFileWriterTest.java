@@ -44,7 +44,7 @@ class PlaceFileWriterTest {
         writer.addObjectText(XYPoint.NO_OFFSET, 0, "KU5MC-9", Optional.empty());
         writer.endObject();
 
-        assertThat(sw.toString().trim()).isEqualTo(readSampleFile("basic spotter list.txt"));
+        assertThat(sw.toString().trim().split("\r?\n")).containsExactly(readSampleFile("basic spotter list.txt"));
     }
     
     @Test
@@ -57,7 +57,7 @@ class PlaceFileWriterTest {
         writer.defineIconFile(URI.create("https://mesonet.agron.iastate.edu/request/grx/arrows.png"), 15, 25, new XYPoint(8, 25));
         writer.defineFont(11, PlaceFileWriter.FontStyle.BOLD, "Courier New");
 
-        assertThat(sw.toString().trim()).isEqualTo(readSampleFile("iowaDotTrucks.txt"));
+        assertThat(sw.toString().trim().split("\r?\n")).containsExactly(readSampleFile("iowaDotTrucks.txt"));
     }
 
     /**
@@ -65,7 +65,7 @@ class PlaceFileWriterTest {
      * @param name of a file in the {@code tests/resources/samplePlaceFiles/} directory
      * @return
      */
-    private static String readSampleFile(String name) throws IOException {
-        return Files.readString(Paths.get("src", "test","resources","samplePlaceFiles", name)).trim();
+    private static String[] readSampleFile(String name) throws IOException {
+        return Files.readString(Paths.get("src", "test","resources","samplePlaceFiles", name)).trim().split("\r?\n");
     }
 }
