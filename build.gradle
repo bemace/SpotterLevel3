@@ -39,3 +39,6 @@ idea {
         downloadSources = true
     }
 }
+application {
+    mainClass = 'club.w0sv.sl3.SpotterLevel3Application'
+}
