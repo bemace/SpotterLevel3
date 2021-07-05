@@ -1,4 +1,4 @@
-Title: "Iowa DOT Trucks @1817Z"
+Title: Iowa DOT Trucks @1817Z
 Refresh: 5
 Color: 200 200 255
 IconFile: 1, 15, 25, 8, 25, "https://mesonet.agron.iastate.edu/request/grx/arrows.png"
