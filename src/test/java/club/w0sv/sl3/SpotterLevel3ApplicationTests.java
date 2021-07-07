@@ -3,6 +3,7 @@ package club.w0sv.sl3;
 import club.w0sv.aprsfi.AprsFiClient;
 import club.w0sv.sl3.config.AprsFiConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
 @ContextConfiguration(loader=GuiSpringBootContextLoader.class)
+@Tag("gui")
 class SpotterLevel3ApplicationTests {
 
     @MockBean
