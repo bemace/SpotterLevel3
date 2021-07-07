@@ -21,16 +21,12 @@ public class AprsService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private ApplicationEventPublisher publisher;
 
-    private RestTemplateBuilder restTemplateBuilder;
-    private AprsFiConfig aprsfiConfig;
     private AprsFiClient client;
     private Map<AprsId, TrackingEntry> trackingEntries = Collections.synchronizedMap(new HashMap<>());
 
-    public AprsService(@Autowired AprsFiConfig aprsfiConfig, @Autowired ApplicationEventPublisher publisher, @Autowired RestTemplateBuilder restTemplateBuilder) {
-        this.aprsfiConfig = aprsfiConfig;
+    public AprsService(@Autowired AprsFiClient client, @Autowired ApplicationEventPublisher publisher) {
+        this.client = client;
         this.publisher = publisher;
-        this.restTemplateBuilder = restTemplateBuilder;
-        client = new AprsFiClient(aprsfiConfig.getApikey(), restTemplateBuilder);
     }
 
 
