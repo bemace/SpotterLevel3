@@ -34,6 +34,18 @@ test {
     useJUnitPlatform()
 }
 
+task nonGuiTest(type: Test) {
+    useJUnitPlatform {
+        excludeTags 'gui'
+    }
+}
+
+task guiTest(type: Test) {
+    useJUnitPlatform {
+        includeTags 'gui'
+    }
+}
+
 idea {
     module {
         downloadJavadoc = true
