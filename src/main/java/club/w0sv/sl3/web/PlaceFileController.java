@@ -5,6 +5,7 @@ import club.w0sv.grlevel3.PlaceFileWriter;
 import club.w0sv.sl3.AprsService;
 import club.w0sv.sl3.TrackingEntry;
 //import club.w0sv.util.IconIdentifier;
+import club.w0sv.util.QuantityUtil;
 import club.w0sv.util.XYPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import tech.units.indriya.quantity.Quantities;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
@@ -59,9 +61,9 @@ public class PlaceFileController {
         
         for (TrackingEntry entry : trackingService.getEntries()) {
             writer.startObject(entry.getLocation());
-            String hoverText = null;
+            String hoverText = entry.getAprsId().toString();
             if (entry.getCourse() != null) {
-                hoverText = entry.getCourse() + " @ " + entry.getSpeed().to(USCustomary.MILE_PER_HOUR);
+                hoverText += ": " + entry.getCourse() + " @ " + QuantityUtil.setScale(entry.getSpeed().to(USCustomary.MILE_PER_HOUR), 0, RoundingMode.HALF_UP);
             }
             
             writer.addObjectText(new XYPoint(0,14),basicFont,entry.getAprsId().toString(), Optional.ofNullable(hoverText));
