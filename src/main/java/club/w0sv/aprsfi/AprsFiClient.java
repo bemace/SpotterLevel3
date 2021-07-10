@@ -29,8 +29,10 @@ public class AprsFiClient {
             throw new IllegalArgumentException("API key not provided");
         this.apikey = apikey;
         
+        String name = getClass().getPackage().getImplementationTitle();
+        String version = getClass().getPackage().getImplementationVersion();
         restTemplate = builder
-                .defaultHeader("User-Agent", "SpotterLevel3 (https://w0sv.club)")
+                .defaultHeader("User-Agent", name + "/"+ version + " (https://github.com/bemace/SpotterLevel3)")
                 .setConnectTimeout(Duration.ofSeconds(3))
                 .setReadTimeout(Duration.ofSeconds(10))
                 .build();
