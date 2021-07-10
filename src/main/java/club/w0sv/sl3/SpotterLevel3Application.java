@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import systems.uom.common.USCustomary;
+import tech.units.indriya.format.SimpleUnitFormat;
+import tech.units.indriya.quantity.Quantities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,6 +28,11 @@ public class SpotterLevel3Application  {
     
     public SpotterLevel3Application(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
+        applyCustomUnitConfiguration();
+    }
+    
+    private void applyCustomUnitConfiguration() {
+        SimpleUnitFormat.getInstance().label(USCustomary.DEGREE_ANGLE,"°");
     }
     
     public static void main(String[] args) {
