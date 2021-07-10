@@ -1,3 +1,6 @@
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
+
 plugins {
     id 'org.springframework.boot' version '2.5.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -46,6 +49,19 @@ task guiTest(type: Test) {
     }
 }
 
+bootJar {
+    manifest {
+        attributes "Implementation-Name": project.name
+        attributes "Implementation-Version": project.version
+        attributes "Implementation-URL": "https://github.com/bemace/SpotterLevel3"
+        attributes "Build-Time": ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS).format(java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME)
+        attributes "Build-Host": InetAddress.getLocalHost().getHostName()
+        attributes "Build-OS": System.getProperty("os.name", "unknown") + " v" + System.getProperty("os.version", "?")
+        attributes "Build-Tool": "Gradle " + project.gradle.gradleVersion
+        // TODO: add some of GitHub's variables: https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables
+    }
+}
+
 idea {
     module {
         downloadJavadoc = true
@@ -53,6 +69,3 @@ idea {
     }
 }
 
-application {
-    mainClass = 'club.w0sv.sl3.SpotterLevel3Application'
-}
