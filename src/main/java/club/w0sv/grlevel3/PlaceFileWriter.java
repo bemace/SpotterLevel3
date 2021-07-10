@@ -69,7 +69,7 @@ public class PlaceFileWriter {
         if (value instanceof Number)
             return String.valueOf(value);
         else
-            return "\"" + String.valueOf(value) + "\"";
+            return "\"" + String.valueOf(value).replaceAll("\\s*\\r?\\n\\s*","; ") + "\"";
     }
 
     /**
