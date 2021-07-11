@@ -28,6 +28,12 @@ public class RosterService {
         entries.put(AprsId.of("W9AX-9"), RosterStatus.CHECKED_IN);
         entries.put(AprsId.of("KU5MC-9"), RosterStatus.CHECKED_IN);
         entries.put(AprsId.of("K9MP-9"), RosterStatus.CHECKED_IN);
+        entries.put(AprsId.of("N0TAC-2"), RosterStatus.CHECKED_IN);
+        entries.put(AprsId.of("KD0NNI-tour"), RosterStatus.CHECKED_IN);
+        entries.put(AprsId.of("WJ0U-10"), RosterStatus.CHECKED_IN);
+        entries.put(AprsId.of("KE0UWL-1"), RosterStatus.CHECKED_OUT);
+        entries.put(AprsId.of("KC0TAF-1-i"), RosterStatus.CHECKED_OUT);
+        entries.put(AprsId.of("KC0UEA-i"), RosterStatus.CHECKED_OUT);
     }
     
     public Set<Map.Entry<AprsId,RosterStatus>> getEntries() {

@@ -21,7 +21,10 @@ class AprsIdTest {
         return Stream.of(
                 Arguments.of("W9AX-9", new AprsId("W9AX",9)),
                 Arguments.of("KU5MC-9", new AprsId("KU5MC",9)),
-                Arguments.of("k9mp-9", new AprsId("K9MP",9))
+                Arguments.of("k9mp-9", new AprsId("K9MP",9)),
+                Arguments.of("KD0NNi-tour", new AprsId("KD0NNI", "tour")),
+                Arguments.of("KC0TAF-1-i", new AprsId("KC0TAF", "1-i")),
+                Arguments.of("KC0UEA-i", new AprsId("KC0UEA", "i"))
         );
     }
 }
