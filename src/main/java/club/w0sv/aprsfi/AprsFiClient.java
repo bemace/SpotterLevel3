@@ -1,6 +1,7 @@
 package club.w0sv.aprsfi;
 
 
+import club.w0sv.sl3.config.AprsFiConfig;
 import club.w0sv.util.AprsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,12 @@ public class AprsFiClient {
     
     private RestTemplate restTemplate;
     
-    private String apikey;
+    private AprsFiConfig config;
     
-    public AprsFiClient(String apikey, RestTemplateBuilder builder) {
-        if (apikey == null)
-            throw new IllegalArgumentException("API key not provided");
-        this.apikey = apikey;
+    public AprsFiClient(AprsFiConfig config, RestTemplateBuilder builder) {
+        if (config == null)
+            throw new IllegalArgumentException("config not provided");
+        this.config = config;
         
         String name = getClass().getPackage().getImplementationTitle();
         String version = getClass().getPackage().getImplementationVersion();
@@ -42,7 +43,7 @@ public class AprsFiClient {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://api.aprs.fi/api/get")
                 .queryParam("name",String.join(",",callsigns.stream().map(i -> i.toString()).collect(Collectors.toList())))
                 .queryParam("what",What.LOCATION.toApiString())
-                .queryParam("apikey", apikey)
+                .queryParam("apikey", config.getApikey())
                 .queryParam("format", "json")
                 ;
         Response response = restTemplate.getForObject(builder.toUriString(), Response.class);

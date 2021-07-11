@@ -26,7 +26,7 @@ public class MainConfiguration {
     
     @Bean
     public AprsFiClient aprsFiClient(AprsFiConfig aprsfiConfig, RestTemplateBuilder restTemplateBuilder) {
-        AprsFiClient client = new AprsFiClient(aprsfiConfig.getApikey(), restTemplateBuilder);
+        AprsFiClient client = new AprsFiClient(aprsfiConfig, restTemplateBuilder);
         return client;
     }
 }
