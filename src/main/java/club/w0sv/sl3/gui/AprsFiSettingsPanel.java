@@ -10,6 +10,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.net.URI;
+import java.util.Properties;
 
 public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -55,5 +56,10 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
     @Override
     public void applyChanges() {
         aprsfiConfig.setApikey(aprsfiApiKey.getText().trim());
+    }
+    
+    @Override
+    public void storeSettings(Properties props) {
+        props.put("aprsfi.apikey", aprsfiConfig.getApikey());
     }
 }
