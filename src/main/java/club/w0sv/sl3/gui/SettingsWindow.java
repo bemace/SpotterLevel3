@@ -1,11 +1,18 @@
 package club.w0sv.sl3.gui;
 
 import club.w0sv.sl3.config.AprsFiConfig;
+import club.w0sv.sl3.config.FilePaths;
+import org.springframework.util.DefaultPropertiesPersister;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Properties;
 
 public class SettingsWindow extends JFrame implements SettingsUI {
     private AprsFiConfig aprsfiConfig;
@@ -48,7 +55,25 @@ public class SettingsWindow extends JFrame implements SettingsUI {
     public void applyChanges() {
         aprsFiSettingsPanel.applyChanges();
     }
+
+    public void writeSettingsToDisk() throws IOException {
+        Properties props = new Properties();
+        storeSettings(props);
+        File file = FilePaths.getInstance().getUserSettingsPath().toFile();
+        try (OutputStream os = new FileOutputStream(file)) {
+            DefaultPropertiesPersister dpp = new DefaultPropertiesPersister();
+            dpp.store(props, os, "SpotterLevel3 settings");
+        }
+        catch (Exception ex) {
+            throw new IOException("error saving settings to " + file, ex);
+        }
+    }
     
+    @Override
+    public void storeSettings(Properties props) {
+        aprsFiSettingsPanel.storeSettings(props);
+    }
+
     public void close() {
         SettingsWindow.this.dispatchEvent(new WindowEvent(SettingsWindow.this, WindowEvent.WINDOW_CLOSING));
     }
@@ -62,6 +87,7 @@ public class SettingsWindow extends JFrame implements SettingsUI {
         public void actionPerformed(ActionEvent e) {
             try {
                 applyChanges();
+                writeSettingsToDisk();
             }
             catch (Exception ex) {
                 JOptionPane.showMessageDialog(SettingsWindow.this,"Error apply changes", "Settings NOT updated",JOptionPane.ERROR_MESSAGE);
@@ -91,6 +117,7 @@ public class SettingsWindow extends JFrame implements SettingsUI {
         public void actionPerformed(ActionEvent e) {
             try {
                 applyChanges();
+                writeSettingsToDisk();
             }
             catch (Exception ex) {
                 JOptionPane.showMessageDialog(SettingsWindow.this,"Error apply changes", "Settings NOT updated",JOptionPane.ERROR_MESSAGE);
