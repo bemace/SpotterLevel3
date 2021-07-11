@@ -1,6 +1,7 @@
 package club.w0sv.sl3.gui;
 
 import club.w0sv.sl3.AprsService;
+import club.w0sv.sl3.config.AprsFiConfig;
 import club.w0sv.sl3.roster.RosterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,22 +10,34 @@ import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 
 @Component
 public class MainWindow extends JFrame {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private RosterService rosterService;
     private AprsService aprsService;
+    private AprsFiConfig aprsfiConfig;
 
+    private JMenuBar menuBar;
     private RosterPanel rosterPanel;
     private TrackingPanel trackingPanel;
 
-    public MainWindow(@Autowired RosterService rosterService, @Autowired AprsService aprsService) {
+    public MainWindow(@Autowired RosterService rosterService, @Autowired AprsService aprsService, @Autowired AprsFiConfig aprsfiConfig) {
         this.rosterService = rosterService;
         this.aprsService = aprsService;
+        this.aprsfiConfig = aprsfiConfig;
         setTitle("SpotterLevel3");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+        
+        JMenu fileMenu = new JMenu("File",false);
+        menuBar.add(fileMenu);
+        fileMenu.add(new SettingsAction(this, aprsfiConfig));
+        fileMenu.add(new ExitAction());
+        
         getContentPane().setLayout(new BorderLayout());
 
         rosterPanel = new RosterPanel(rosterService);
@@ -43,4 +56,37 @@ public class MainWindow extends JFrame {
 
     }
 
+    private static class SettingsAction extends AbstractAction {
+        private Window parentComponent;
+        private AprsFiConfig aprsfiConfig;
+        
+        public SettingsAction(Window parent, AprsFiConfig aprsfiConfig) {
+            super("Settings");
+            this.parentComponent = parent;
+            this.aprsfiConfig = aprsfiConfig;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                SettingsWindow window = new SettingsWindow(aprsfiConfig);
+                window.pack();
+                window.setVisible(true);
+            }
+            catch (Exception ex) {
+                JOptionPane.showMessageDialog(parentComponent,"error: ", ex.getLocalizedMessage(),JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    private static class ExitAction extends AbstractAction {
+
+        public ExitAction() {
+            super("Exit");
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            System.exit(0);
+        }
+    }
 }
