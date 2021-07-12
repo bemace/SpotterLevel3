@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The authoritative roster.
@@ -20,47 +17,50 @@ import java.util.Set;
 public class RosterService {
     private Logger logger = LoggerFactory.getLogger(getClass());
     private ApplicationEventPublisher publisher;
-    
-    private Map<AprsId,RosterStatus> entries = Collections.synchronizedMap(new HashMap<>());
-    
+
+    private Map<AprsId, RosterEntry> entries = Collections.synchronizedMap(new HashMap<>());
+
     public RosterService(@Autowired ApplicationEventPublisher publisher) {
         this.publisher = publisher;
-        entries.put(AprsId.of("W9AX-9"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("KU5MC-9"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("K9MP-9"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("N0TAC-2"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("KD0NNI-tour"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("WJ0U-10"), RosterStatus.CHECKED_IN);
-        entries.put(AprsId.of("KE0UWL-1"), RosterStatus.CHECKED_OUT);
-        entries.put(AprsId.of("KC0TAF-1-i"), RosterStatus.CHECKED_OUT);
-        entries.put(AprsId.of("KC0UEA-i"), RosterStatus.CHECKED_OUT);
+        addOrUpdate(new RosterEntry(AprsId.of("W9AX-9"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("KU5MC-9"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("K9MP-9"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("N0TAC-2"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("KD0NNI-tour"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("WJ0U-10"), RosterStatus.CHECKED_IN));
+        addOrUpdate(new RosterEntry(AprsId.of("KE0UWL-1"), RosterStatus.CHECKED_OUT));
+        addOrUpdate(new RosterEntry(AprsId.of("KC0TAF-1-i"), RosterStatus.CHECKED_OUT));
+        addOrUpdate(new RosterEntry(AprsId.of("KC0UEA-i"), RosterStatus.CHECKED_OUT));
     }
-    
-    public Set<Map.Entry<AprsId,RosterStatus>> getEntries() {
-        return Collections.unmodifiableSet(entries.entrySet());
+
+    public Collection<RosterEntry> getEntries() {
+        return Collections.unmodifiableCollection(entries.values());
     }
-    
+
     public Set<AprsId> getAprsIds() {
         return Collections.unmodifiableSet(entries.keySet());
     }
-    
-    public void addOrUpdate(AprsId what, RosterStatus status) {
-        if (what == null)
+
+    public void addOrUpdate(RosterEntry entry) {
+        if (entry.getAprsId() == null)
             throw new IllegalArgumentException("callsign parameter cannot be null");
-        if (status == null)
+        if (entry.getStatus() == null)
             throw new IllegalArgumentException("status parameter cannot be null");
-        
-        RosterStatus oldStatus = entries.get(what);
-        entries.put(what, status);
-        logger.debug("{} {}", what, status);
-        publisher.publishEvent(new RosterChangeEvent(this, what, oldStatus, status));
+
+        RosterEntry existingEntry = entries.get(entry.getAprsId());
+        entries.put(entry.getAprsId(), entry);
+        logger.debug("{} {} ({})", existingEntry == null ? "ADD" : "UPDATE", entry.getAprsId(), entry.getStatus());
+        publisher.publishEvent(new RosterChangeEvent(this, entry.getAprsId(), existingEntry, entry));
     }
-    
+
     public void remove(AprsId what) {
-        RosterStatus oldStatus = entries.remove(what);
-        if (oldStatus != null) {
+        RosterEntry oldEntry = entries.remove(what);
+        if (oldEntry == null) {
+            logger.trace("{} not found in roster", what);
+        }
+        else {
             logger.debug("{} removed", what);
-            publisher.publishEvent(new RosterChangeEvent(this, what, oldStatus, null));
+            publisher.publishEvent(new RosterChangeEvent(this, what, oldEntry, null));
         }
     }
 }

@@ -1,22 +1,21 @@
 package club.w0sv.sl3.gui;
 
-import club.w0sv.util.AprsId;
 import club.w0sv.sl3.event.RosterChangeEvent;
 import club.w0sv.sl3.roster.RosterEntry;
 import club.w0sv.sl3.roster.RosterService;
 import club.w0sv.sl3.roster.RosterStatus;
+import club.w0sv.util.AprsId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
-@Component
+@org.springframework.stereotype.Component
 public class RosterPanel extends JPanel {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -70,18 +69,19 @@ public class RosterPanel extends JPanel {
     @EventListener
     synchronized void handleRosterChangeEvent(RosterChangeEvent event) {
         if (event.getChangeType() == RosterChangeEvent.ChangeType.ADD) {
-            listModel.addElement(new RosterEntry(event.getAprsId(), event.getNewStatus()));
+            listModel.addElement(event.getNewEntry());
             list.updateUI();
             list.repaint();
             logger.trace("{} added to roster panel", event.getAprsId());
+        }
+        if (event.getChangeType() == RosterChangeEvent.ChangeType.REMOVE) {
+            listModel.removeElement(event.getOldEntry());
         }
     }
 
     public synchronized void refresh() {
         listModel.clear();
-        for (Map.Entry<AprsId, RosterStatus> entry : rosterService.getEntries()) {
-            listModel.addElement(new RosterEntry(entry.getKey(), entry.getValue()));
-        }
+        listModel.addAll(rosterService.getEntries());
         logger.trace("reloaded");
     }
 
@@ -104,7 +104,7 @@ public class RosterPanel extends JPanel {
             dialog.setVisible(true);
             try {
                 if (dialog.getResult()) {
-                    rosterService.addOrUpdate(dialog.getCallsignWithSSID(), dialog.getStatus());
+                    rosterService.addOrUpdate(new RosterEntry(dialog.getCallsignWithSSID(), dialog.getStatus()));
                 }
             }
             catch (Exception ex) {
@@ -135,8 +135,13 @@ public class RosterPanel extends JPanel {
                     return;
                 }
 
+                String confirmationMessage;
+                if (entries.size() > 5)
+                    confirmationMessage = "Remove " + entries.size() + " entries from roster?";
+                else
+                    confirmationMessage = "Remove " + entries.stream().map(e -> e.getAprsId().toString()).collect(Collectors.joining(", ")) + " from roster?";
                 if (JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(rosterPanel),
-                        "Remove ...", "Confirm removal", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                        confirmationMessage, "Confirm removal", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                     entries.stream().forEach(e -> rosterService.remove(e.getAprsId()));
                 }
             }

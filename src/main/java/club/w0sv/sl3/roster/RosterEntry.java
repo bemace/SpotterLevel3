@@ -12,6 +12,11 @@ public class RosterEntry {
         this.aprsId = aprsId;
         this.status = status;
     }
+    
+    public RosterEntry(RosterEntry template) {
+        this.aprsId = template.aprsId;
+        this.status = template.status;
+    }
 
     public AprsId getAprsId() {
         return aprsId;

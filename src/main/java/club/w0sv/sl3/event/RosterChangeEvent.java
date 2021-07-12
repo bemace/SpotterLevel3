@@ -1,5 +1,6 @@
 package club.w0sv.sl3.event;
 
+import club.w0sv.sl3.roster.RosterEntry;
 import club.w0sv.util.AprsId;
 import club.w0sv.sl3.roster.RosterStatus;
 import org.springframework.context.ApplicationEvent;
@@ -12,21 +13,21 @@ public class RosterChangeEvent extends ApplicationEvent {
     }
     
     private final AprsId aprsId;
-    private final RosterStatus oldStatus;
-    private final RosterStatus newStatus;
+    private final RosterEntry oldEntry;
+    private final RosterEntry newEntry;
     private final ChangeType changeType;
     
-    public RosterChangeEvent(Object source, AprsId aprsId, RosterStatus oldStatus, RosterStatus newStatus) {
+    public RosterChangeEvent(Object source, AprsId aprsId, RosterEntry oldEntry, RosterEntry newEntry) {
         super(source);
         this.aprsId = aprsId;
-        this.oldStatus = oldStatus;
-        this.newStatus = newStatus;
+        this.oldEntry = oldEntry;
+        this.newEntry = newEntry;
         
-        if (oldStatus == null && newStatus == null)
-            throw new IllegalArgumentException("oldStatus and newStatus cannot both be null");
-        if (oldStatus == null)
+        if (oldEntry == null && newEntry == null)
+            throw new IllegalArgumentException("oldStatus and newEntry cannot both be null");
+        if (oldEntry == null)
             changeType = ChangeType.ADD;
-        else if (newStatus == null)
+        else if (newEntry == null)
             changeType = ChangeType.REMOVE;
         else
             changeType = ChangeType.UPDATE;
@@ -40,20 +41,20 @@ public class RosterChangeEvent extends ApplicationEvent {
         return aprsId;
     }
 
-    public RosterStatus getOldStatus() {
-        return oldStatus;
+    public RosterEntry getOldEntry() {
+        return oldEntry;
     }
 
-    public RosterStatus getNewStatus() {
-        return newStatus;
+    public RosterEntry getNewEntry() {
+        return newEntry;
     }
 
     @Override
     public String toString() {
         return "RosterEvent{" +
                 "callsignWithSSID=" + aprsId +
-                ", oldStatus=" + oldStatus +
-                ", newStatus=" + newStatus +
+                ", oldEntry=" + oldEntry +
+                ", newEntry=" + newEntry +
                 ", changeType=" + changeType +
                 '}';
     }
