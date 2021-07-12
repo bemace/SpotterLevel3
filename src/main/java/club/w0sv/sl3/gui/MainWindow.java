@@ -15,7 +15,6 @@ import java.awt.event.ActionEvent;
 @Component
 public class MainWindow extends JFrame {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private RosterService rosterService;
     private AprsService aprsService;
     private AprsFiConfig aprsfiConfig;
 
@@ -23,8 +22,8 @@ public class MainWindow extends JFrame {
     private RosterPanel rosterPanel;
     private TrackingPanel trackingPanel;
 
-    public MainWindow(@Autowired RosterService rosterService, @Autowired AprsService aprsService, @Autowired AprsFiConfig aprsfiConfig) {
-        this.rosterService = rosterService;
+    public MainWindow(@Autowired RosterPanel rosterPanel, @Autowired AprsService aprsService, @Autowired AprsFiConfig aprsfiConfig) {
+        this.rosterPanel = rosterPanel;
         this.aprsService = aprsService;
         this.aprsfiConfig = aprsfiConfig;
         setTitle("SpotterLevel3");
@@ -40,11 +39,10 @@ public class MainWindow extends JFrame {
         
         getContentPane().setLayout(new BorderLayout());
 
-        rosterPanel = new RosterPanel(rosterService);
         rosterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Roster"));
         getContentPane().add(rosterPanel, BorderLayout.WEST);
 
-        trackingPanel = new TrackingPanel(rosterService, aprsService);
+        trackingPanel = new TrackingPanel(rosterPanel.getRosterService(), aprsService);
         trackingPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Tracking"));
         getContentPane().add(trackingPanel, BorderLayout.CENTER);
 
