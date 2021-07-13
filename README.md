@@ -7,3 +7,11 @@ Feeds APRS data into GRLevel3 via custom placefiles to allow tracking of Skywarn
 5. SpotterLevel3's embedded web server generates up-to-date place files on-demand
 
 This is being developed for the [Saint Cloud Amateur Radio Club](https://w0sv.club) (W0SV) which operates Central Minnesota Skywarn. I dont know if this will be useful to other clubs or Skywarn organizations but you're welcome to try it out.
+
+## Requirements
+
+* Java 11.
+
+## Setup
+
+* Enter your aprs.fi API key on the settings screen
