@@ -13,6 +13,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,15 @@ public class RosterPanel extends JPanel {
         this.rosterService = rosterService;
         listModel = new DefaultListModel<>();
         list = new JList<>(listModel);
+        list.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    JPopupMenu menu = createListPopupMenu();
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        });
 
         addEntryAction = new AddEntry(this, rosterService);
         removeEntryAction = new RemoveEntry(this, rosterService);
@@ -61,6 +72,19 @@ public class RosterPanel extends JPanel {
         return buttonBar;
     }
 
+    private JPopupMenu createListPopupMenu() {
+        JPopupMenu menu = new JPopupMenu("Roster Actions");
+
+        for (RosterStatus status : RosterStatus.values()) {
+            menu.add(new SetEntryStatus(this,rosterService,status));
+        }
+        
+        menu.addSeparator();
+        menu.add(removeEntryAction);
+
+        return menu;
+    }
+    
     @Override
     public void addNotify() {
         super.addNotify();
@@ -86,7 +110,11 @@ public class RosterPanel extends JPanel {
             listModel.addElement(event.getNewEntry());
             logger.trace("{} added to roster panel", event.getAprsId());
         }
-        if (event.getChangeType() == RosterChangeEvent.ChangeType.REMOVE) {
+        else if (event.getChangeType() == RosterChangeEvent.ChangeType.UPDATE) {
+            int i = listModel.indexOf(event.getOldEntry());
+            listModel.setElementAt(event.getNewEntry(),i);
+        }
+        else if (event.getChangeType() == RosterChangeEvent.ChangeType.REMOVE) {
             if (listModel.removeElement(event.getOldEntry()))
                 logger.debug("removed {}", event.getOldEntry().getAprsId());
             else
@@ -169,6 +197,27 @@ public class RosterPanel extends JPanel {
         }
     }
 
+    private static class SetEntryStatus extends AbstractAction {
+        private final RosterPanel rosterPanel;
+        private final RosterService rosterService;
+        private final RosterStatus status;
+
+        public SetEntryStatus(RosterPanel rosterPanel, RosterService rosterService, RosterStatus status) {
+            super(status.toDisplayString());
+            putValue(Action.SHORT_DESCRIPTION, "Change status of selected entries to " + status.toDisplayString());
+//            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+            this.rosterPanel = rosterPanel;
+            this.rosterService = rosterService;
+            this.status = status;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            List<RosterEntry> entries = rosterPanel.list.getSelectedValuesList();
+            entries.stream().forEach(e -> { e.setStatus(status); rosterService.addOrUpdate(e); });
+        }
+    }
+    
     private static class RefreshRosterList extends AbstractAction {
         private final RosterPanel panel;
 
