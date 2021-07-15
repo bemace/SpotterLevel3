@@ -50,6 +50,7 @@ public class RosterPanel extends JPanel {
                 }
             }
         });
+        list.setCellRenderer(new RosterCellRenderer());
 
         addEntryAction = new AddEntry(this, rosterService);
         removeEntryAction = new RemoveEntry(this, rosterService);
@@ -126,6 +127,68 @@ public class RosterPanel extends JPanel {
         listModel.clear();
         listModel.addAll(rosterService.getEntries());
         logger.trace("reloaded");
+    }
+    
+    private static class RosterCellRenderer extends JLabel implements ListCellRenderer<RosterEntry> {
+
+        public RosterCellRenderer() {
+            setOpaque(true);
+//            setBorder(getNoFocusBorder());
+            setName("List.cellRenderer");
+        }
+        
+        @Override
+        public Component getListCellRendererComponent(JList<? extends RosterEntry> list, RosterEntry entry, int index, boolean isSelected, boolean cellHasFocus) {
+            setComponentOrientation(list.getComponentOrientation());
+
+            Color bg = null;
+            Color fg = null;
+
+            JList.DropLocation dropLocation = list.getDropLocation();
+            if (dropLocation != null
+                    && !dropLocation.isInsert()
+                    && dropLocation.getIndex() == index) {
+
+//                bg = DefaultLookup.getColor(this, ui, "List.dropCellBackground");
+//                fg = DefaultLookup.getColor(this, ui, "List.dropCellForeground");
+
+                isSelected = true;
+            }
+
+            if (isSelected) {
+                setBackground(bg == null ? list.getSelectionBackground() : bg);
+//                setForeground(fg == null ? list.getSelectionForeground() : fg);
+            }
+            else {
+                setBackground(list.getBackground());
+            }
+
+            if (entry.getStatus() == RosterStatus.CHECKED_OUT)
+                setForeground(Color.GRAY);
+            else
+                setForeground(list.getForeground());
+
+            setText(entry.getAprsId().toString());
+            setToolTipText(entry.getAprsId().toString() + " is " + entry.getStatus().toDisplayString());
+            
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+
+//            Border border = null;
+//            if (cellHasFocus) {
+//                if (isSelected) {
+////                    border = DefaultLookup.getBorder(this, ui, "List.focusSelectedCellHighlightBorder");
+//                }
+//                if (border == null) {
+////                    border = DefaultLookup.getBorder(this, ui, "List.focusCellHighlightBorder");
+//                }
+//            } else {
+////                border = getNoFocusBorder();
+//            }
+////            setBorder(border);
+
+            return this;
+        }
     }
 
     private static class AddEntry extends AbstractAction {
