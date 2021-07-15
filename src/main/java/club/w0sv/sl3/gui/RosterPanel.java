@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,6 +24,7 @@ public class RosterPanel extends JPanel {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private RosterService rosterService;
+    private IconManager iconManager;
 
     private final DefaultListModel<RosterEntry> listModel;
     private final JList<RosterEntry> list;
@@ -36,9 +38,11 @@ public class RosterPanel extends JPanel {
     public static final String REMOVE_ENTRY_ACTION_ID = "remove-selected-roster-entries";
 
 
-    public RosterPanel(RosterService rosterService) {
+    public RosterPanel(RosterService rosterService, IconManager iconManager) {
         super(new BorderLayout());
         this.rosterService = rosterService;
+        this.iconManager = iconManager;
+
         listModel = new DefaultListModel<>();
         list = new JList<>(listModel);
         list.addMouseListener(new MouseAdapter() {
@@ -52,8 +56,8 @@ public class RosterPanel extends JPanel {
         });
         list.setCellRenderer(new RosterCellRenderer());
 
-        addEntryAction = new AddEntry(this, rosterService);
-        removeEntryAction = new RemoveEntry(this, rosterService);
+        addEntryAction = new AddEntry();
+        removeEntryAction = new RemoveEntry();
         getActionMap().put(ADD_ENTRY_ACTION_ID, addEntryAction);
         getActionMap().put(REMOVE_ENTRY_ACTION_ID, removeEntryAction);
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put((KeyStroke) addEntryAction.getValue(Action.ACCELERATOR_KEY), ADD_ENTRY_ACTION_ID);
@@ -69,7 +73,7 @@ public class RosterPanel extends JPanel {
         buttonBar.setFloatable(false);
         buttonBar.add(addEntryAction);
         buttonBar.add(removeEntryAction);
-        buttonBar.add(new RefreshRosterList(this));
+        buttonBar.add(new RefreshRosterList());
         return buttonBar;
     }
 
@@ -77,15 +81,15 @@ public class RosterPanel extends JPanel {
         JPopupMenu menu = new JPopupMenu("Roster Actions");
 
         for (RosterStatus status : RosterStatus.values()) {
-            menu.add(new SetEntryStatus(this,rosterService,status));
+            menu.add(new SetEntryStatus(this, rosterService, status));
         }
-        
+
         menu.addSeparator();
         menu.add(removeEntryAction);
 
         return menu;
     }
-    
+
     @Override
     public void addNotify() {
         super.addNotify();
@@ -113,7 +117,7 @@ public class RosterPanel extends JPanel {
         }
         else if (event.getChangeType() == RosterChangeEvent.ChangeType.UPDATE) {
             int i = listModel.indexOf(event.getOldEntry());
-            listModel.setElementAt(event.getNewEntry(),i);
+            listModel.setElementAt(event.getNewEntry(), i);
         }
         else if (event.getChangeType() == RosterChangeEvent.ChangeType.REMOVE) {
             if (listModel.removeElement(event.getOldEntry()))
@@ -128,7 +132,7 @@ public class RosterPanel extends JPanel {
         listModel.addAll(rosterService.getEntries());
         logger.trace("reloaded");
     }
-    
+
     private static class RosterCellRenderer extends JLabel implements ListCellRenderer<RosterEntry> {
 
         public RosterCellRenderer() {
@@ -136,7 +140,7 @@ public class RosterPanel extends JPanel {
 //            setBorder(getNoFocusBorder());
             setName("List.cellRenderer");
         }
-        
+
         @Override
         public Component getListCellRendererComponent(JList<? extends RosterEntry> list, RosterEntry entry, int index, boolean isSelected, boolean cellHasFocus) {
             setComponentOrientation(list.getComponentOrientation());
@@ -170,7 +174,7 @@ public class RosterPanel extends JPanel {
 
             setText(entry.getAprsId().toString());
             setToolTipText(entry.getAprsId().toString() + " is " + entry.getStatus().toDisplayString());
-            
+
             setEnabled(list.isEnabled());
             setFont(list.getFont());
 
@@ -191,21 +195,19 @@ public class RosterPanel extends JPanel {
         }
     }
 
-    private static class AddEntry extends AbstractAction {
-        private final RosterPanel rosterPanel;
-        private final RosterService rosterService;
+    private class AddEntry extends AbstractAppAction {
+        private final Logger logger = LoggerFactory.getLogger(getClass());
 
-        public AddEntry(RosterPanel rosterPanel, RosterService rosterService) {
+        public AddEntry() {
             super("Add");
             putValue(Action.SHORT_DESCRIPTION, "Add someone to the roster");
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0));
-            this.rosterPanel = rosterPanel;
-            this.rosterService = rosterService;
+            putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Add16.gif").orElse(null));
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RosterEntryDialog dialog = new RosterEntryDialog(SwingUtilities.getWindowAncestor(rosterPanel));
+            RosterEntryDialog dialog = new RosterEntryDialog(SwingUtilities.getWindowAncestor(RosterPanel.this));
             dialog.setTitle("New roster entry");
             dialog.pack();
             dialog.setVisible(true);
@@ -215,31 +217,28 @@ public class RosterPanel extends JPanel {
                 }
             }
             catch (Exception ex) {
-                rosterPanel.logger.error("error adding roster entry", ex);
-                JOptionPane.showMessageDialog(rosterPanel, ex.getLocalizedMessage(), "Roster addition failed", JOptionPane.ERROR_MESSAGE);
+                logger.error("error adding roster entry", ex);
+                JOptionPane.showMessageDialog(RosterPanel.this, ex.getLocalizedMessage(), "Roster addition failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
 
-    private static class RemoveEntry extends AbstractAction {
-        private final RosterPanel rosterPanel;
-        private final RosterService rosterService;
+    private class RemoveEntry extends AbstractAppAction {
 
-        public RemoveEntry(RosterPanel rosterPanel, RosterService rosterService) {
+        public RemoveEntry() {
             super("Remove");
             putValue(Action.SHORT_DESCRIPTION, "Remove selected entries from the roster");
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-            this.rosterPanel = rosterPanel;
-            this.rosterService = rosterService;
+            putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Remove16.gif").orElse(null));
         }
 
         @Override
         public void actionPerformed(ActionEvent event) {
             try {
-                List<RosterEntry> entries = rosterPanel.list.getSelectedValuesList();
+                List<RosterEntry> entries = list.getSelectedValuesList();
                 if (entries.isEmpty()) {
-                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(rosterPanel), "No entries selected", "Can't remove", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(RosterPanel.this), "No entries selected", "Can't remove", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -248,19 +247,19 @@ public class RosterPanel extends JPanel {
                     confirmationMessage = "Remove " + entries.size() + " entries from roster?";
                 else
                     confirmationMessage = "Remove " + entries.stream().map(e -> e.getAprsId().toString()).collect(Collectors.joining(", ")) + " from roster?";
-                if (JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(rosterPanel),
+                if (JOptionPane.showConfirmDialog(SwingUtilities.getWindowAncestor(RosterPanel.this),
                         confirmationMessage, "Confirm removal", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
                     entries.stream().forEach(e -> rosterService.remove(e.getAprsId()));
                 }
             }
             catch (Exception ex) {
-                rosterPanel.logger.error("couldn't remove {}", ex);
-                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(rosterPanel), "removal failed", "Error", JOptionPane.ERROR_MESSAGE);
+                logger.error("couldn't remove {}", ex);
+                JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(RosterPanel.this), "removal failed", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private static class SetEntryStatus extends AbstractAction {
+    private static class SetEntryStatus extends AbstractAppAction {
         private final RosterPanel rosterPanel;
         private final RosterService rosterService;
         private final RosterStatus status;
@@ -277,29 +276,31 @@ public class RosterPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent event) {
             List<RosterEntry> entries = rosterPanel.list.getSelectedValuesList();
-            entries.stream().forEach(e -> { e.setStatus(status); rosterService.addOrUpdate(e); });
+            entries.stream().forEach(e -> {
+                e.setStatus(status);
+                rosterService.addOrUpdate(e);
+            });
         }
     }
-    
-    private static class RefreshRosterList extends AbstractAction {
-        private final RosterPanel panel;
 
-        public RefreshRosterList(RosterPanel panel) {
+    private class RefreshRosterList extends AbstractAppAction {
+
+        public RefreshRosterList() {
             super("Refresh");
             putValue(Action.SHORT_DESCRIPTION, "Reload the entire roster");
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5,0));
-            this.panel = panel;
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Refresh16.gif").orElse(null));
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                panel.refresh();
-                panel.logger.debug("roster refreshed");
+                RosterPanel.this.refresh();
+                logger.debug("roster refreshed");
             }
             catch (Exception ex) {
-                panel.logger.error("error refreshing roster", ex);
-                JOptionPane.showMessageDialog(panel, ex.getLocalizedMessage(), "Refresh failed", JOptionPane.ERROR_MESSAGE);
+                logger.error("error refreshing roster", ex);
+                JOptionPane.showMessageDialog(RosterPanel.this, ex.getLocalizedMessage(), "Refresh failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

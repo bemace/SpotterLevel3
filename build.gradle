@@ -24,6 +24,8 @@ dependencies {
     implementation group: 'systems.uom', name: 'systems-quantity', version: '2.0.2'
     implementation group: 'systems.uom', name: 'systems-unicode', version: '2.0.2'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+//    implementation group: 'javax.jlfgr', name: 'jlfgr', version: '1.0'
+    implementation files('lib/jlfgr-1_0.jar')
 
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
