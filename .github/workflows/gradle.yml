@@ -40,3 +40,8 @@ jobs:
       uses: GabrielBB/xvfb-action@v1
       with:
         run: ./gradlew guiTest
+    - name: Upload Jar
+      uses: actions/upload-artifact@v2
+      with:
+        name: jar
+        path: build/lib/*.jar
