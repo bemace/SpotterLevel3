@@ -21,7 +21,7 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
-    - name: Cache Gradle packages
+    - name: Setup build cache
       uses: actions/cache@v2
       with:
         path: |
@@ -40,8 +40,12 @@ jobs:
       uses: GabrielBB/xvfb-action@v1
       with:
         run: ./gradlew guiTest
+    - name: Build Spring Boot Jar
+      run: ./gradlew bootJar
     - name: Upload Jar
       uses: actions/upload-artifact@v2
       with:
-        name: jar
-        path: build/libs/*.jar
+        name: boot-jar
+        path: |
+          build/libs/*.jar
+          !build/libs/*-plain.jar
