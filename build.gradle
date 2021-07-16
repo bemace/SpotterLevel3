@@ -7,10 +7,9 @@ plugins {
     id 'java'
     id 'application'
     id 'idea'
+    id 'maven-publish'
 }
 
-group = 'club.w0sv'
-version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 repositories {
@@ -71,3 +70,22 @@ idea {
     }
 }
 
+publishing {
+    publications {
+        bootJava(MavenPublication) {
+            artifact bootJar
+        }
+    }
+    
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/bemace/SpotterLevel3")
+            
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
