@@ -8,6 +8,7 @@ plugins {
     id 'application'
     id 'idea'
     id 'maven-publish'
+    id 'edu.sc.seis.launch4j' version '2.5.0'
 }
 
 sourceCompatibility = '11'
@@ -63,6 +64,47 @@ bootJar {
     }
 }
 
+launch4j {
+    mainClassName = 'club.w0sv.sl3.SpotterLevel3Application'
+    jarTask = jar
+//    bundledJrePath = "C:/Program Files/java/jdk-11.0.2"
+    bundledJrePath = './jre/jdk-11.0.11+9-jre'
+}
+
+ext.jreDistributionPath = "launch4j/jre"
+ext.jreArchiveSourcePath = "platform/windows/"
+ext.jreTargetVersion = "11.0.11_9"
+
+task extractWin64Jre(type: Sync) {
+    def src = "${jreArchiveSourcePath}/OpenJDK11U-jre_x64_windows_hotspot_${jreTargetVersion}.zip"
+    def dst = "${buildDir}/${jreDistributionPath}"
+    from zipTree(src)
+    into dst
+    doLast() {
+        if(getDidWork()) {
+            getLogger().info "Extracting JRE from $src into $dst"
+        }
+    }
+    group = 'Windows Distribution'
+    description = "Unzips the Windows 64-bit JRE from ${src} into the bundled JRE path."
+}
+
+createExe.dependsOn(extractWin64Jre)
+
+task cleanJre {
+    outputs.upToDateWhen {
+        return !( new File(project.jreDistributionPath).exists() );
+    }
+    doLast() {
+        delete project.jreDistributionPath
+        getLogger().info "Deleting JRE distribution directory: ${jreDistributionPath}"
+    }
+    group = 'Build'
+    description = "Removes the JRE distribution directory."
+}
+
+clean.dependsOn(cleanJre)
+
 idea {
     module {
         downloadJavadoc = true
@@ -70,22 +112,3 @@ idea {
     }
 }
 
-publishing {
-    publications {
-        bootJava(MavenPublication) {
-            artifact bootJar
-        }
-    }
-    
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bemace/SpotterLevel3")
-            
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
-}
