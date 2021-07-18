@@ -9,13 +9,14 @@ Feeds [APRS](http://www.aprs.org/) data into [GRLevel3](http://www.grlevelx.com/
 
 This is being developed for the [Saint Cloud Amateur Radio Club](https://w0sv.club) (W0SV) which operates Central Minnesota Skywarn. I dont know if this will be useful to other clubs or Skywarn organizations but you're welcome to try it out.
 
-## Requirements
+## System Requirements
 
-* Java 11.
+* Java 11. (the Windows distributions include the necessary JRE)
 
 ## Setup
 
-* Enter your aprs.fi API key on the settings screen
+* Enter your aprs.fi API key on the settings screen. (Create a free account and then get your API key from your [My Account](https://aprs.fi/account/) page.)
+* add the placefile URL to GRLevel3's Placefile Manager: http://localhost:8080/placeFiles/spotters
 
 ## Support
 Submit bug reports and feature requests on GitHub: https://github.com/bemace/SpotterLevel3/issues
