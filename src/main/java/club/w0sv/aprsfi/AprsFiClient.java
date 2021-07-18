@@ -50,7 +50,7 @@ public class AprsFiClient {
         if (response.getResult() == Result.OK)
             logger.debug("got {} {}s from aprs.fi", response.getFound(), response.getWhat());
         else
-            throw new IOException("aprs.fi query failed");
+            throw new IOException("aprs.fi query failed: " + response.getDescription());
         
         return response.getEntries();
     }

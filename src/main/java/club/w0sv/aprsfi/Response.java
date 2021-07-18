@@ -12,6 +12,11 @@ public class Response {
     private String command;
     @JsonDeserialize(using = ResultJsonDeserializer.class)
     private Result result;
+    /** if <tt>result == {@link Result#FAIL}</tt>,
+     * this will contain a description of the error that occured.
+     */
+    @JsonProperty("description")
+    private String description;
     @JsonDeserialize(using = WhatJsonDeserializer.class)
     private What what;
     @JsonProperty("found")
@@ -34,6 +39,14 @@ public class Response {
 
     public void setResult(Result result) {
         this.result = result;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public What getWhat() {

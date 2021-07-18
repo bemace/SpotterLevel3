@@ -5,6 +5,7 @@ import club.w0sv.sl3.AprsService;
 import club.w0sv.sl3.TrackingEntry;
 import club.w0sv.sl3.roster.RosterService;
 import club.w0sv.util.QuantityUtil;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import systems.uom.common.USCustomary;
@@ -142,7 +143,8 @@ public class TrackingPanel extends JPanel {
             }
             catch (Exception ex) {
                 panel.logger.error("error refreshing tracking data", ex);
-                JOptionPane.showMessageDialog(panel, ex.getLocalizedMessage(), "Refresh failed", JOptionPane.ERROR_MESSAGE);
+                
+                JOptionPane.showMessageDialog(panel, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
