@@ -56,5 +56,6 @@ jobs:
         files: |
           build/distributions/SpotterLevel3-boot-*.zip
           build/distributions/SpotterLevel3-windows-*.zip
+        draft: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
