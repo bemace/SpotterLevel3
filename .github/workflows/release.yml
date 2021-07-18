@@ -1,8 +1,12 @@
-name: Publish Binaries
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Prepare Release
 
 on:
-  release:
-    types: [ created ]
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -37,20 +41,12 @@ jobs:
           run: ./gradlew guiTest
       - name: Build Spring Boot Jar
         run: ./gradlew bootJar
-      - name: Upload Jar
-        uses: actions/upload-artifact@v2
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: boot-jar
-          path: |
-            build/libs/*.jar
-            !build/libs/*-plain.jar
-  generate:
-    name: Upload Artifacts
-    runs-on: ubuntu-latest
-    steps:
-      - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@master
+          files: |
+            build/distributions/SpotterLevel3-boot-*.zip
+            build/distributions/SpotterLevel3-windows-*.zip
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: 'build/libs/*.jar'    
