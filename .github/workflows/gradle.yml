@@ -49,3 +49,12 @@ jobs:
         path: |
           build/libs/*.jar
           !build/libs/*-plain.jar
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/v')
+      with:
+        files: |
+          build/distributions/SpotterLevel3-boot-*.zip
+          build/distributions/SpotterLevel3-windows-*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
