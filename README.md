@@ -16,3 +16,6 @@ This is being developed for the [Saint Cloud Amateur Radio Club](https://w0sv.cl
 ## Setup
 
 * Enter your aprs.fi API key on the settings screen
+
+## Support
+Submit bug reports and feature requests on GitHub: https://github.com/bemace/SpotterLevel3/issues

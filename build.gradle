@@ -9,6 +9,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'edu.sc.seis.launch4j' version '2.5.0'
+    id 'distribution'
 }
 
 sourceCompatibility = '11'
@@ -104,6 +105,28 @@ task cleanJre {
 }
 
 clean.dependsOn(cleanJre)
+
+distributions {
+    boot {
+        contents {
+            from "LICENSE"
+            from "README.md"
+        }
+    }
+    
+    windows {
+        
+        contents {
+//            into ('lib') {
+//                from jar
+//            }
+            from createExe
+            from "LICENSE"
+            from "README.md"
+            duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+        }
+    }
+}
 
 idea {
     module {
