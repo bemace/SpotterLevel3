@@ -1,6 +1,5 @@
 package club.w0sv.sl3;
 
-//import club.w0sv.sl3.config.AprsFiConfig;
 import club.w0sv.aprsfi.AprsFiClient;
 import club.w0sv.sl3.config.AprsFiConfig;
 import org.springframework.beans.factory.annotation.Autowired;

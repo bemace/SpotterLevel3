@@ -1,8 +1,10 @@
 package club.w0sv.sl3.gui;
 
 import club.w0sv.sl3.config.AprsFiConfig;
+import club.w0sv.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
@@ -12,6 +14,7 @@ import java.awt.*;
 import java.net.URI;
 import java.util.Properties;
 
+@Component
 public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static URI aprsFi = URI.create("https://aprs.fi/");
@@ -47,19 +50,31 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
         aprsfiApiKey = new JTextField(24);
         mainPanel.add(aprsfiApiKey);
     }
+    
+    public String getApiKey() {
+        return StringUtils.trim(aprsfiApiKey.getText());
+    }
+    
+    public void setApiKey(String key) {
+        aprsfiApiKey.setText(key);
+    }
 
     @Override
     public void displaySettings() {
-        aprsfiApiKey.setText(aprsfiConfig.getApikey());
+        setApiKey(aprsfiConfig.getApikey());
     }
 
     @Override
     public void applyChanges() {
-        aprsfiConfig.setApikey(aprsfiApiKey.getText().trim());
+        aprsfiConfig.setApikey(getApiKey());
     }
     
     @Override
     public void storeSettings(Properties props) {
-        props.put("aprsfi.apikey", aprsfiConfig.getApikey());
+        String key = getApiKey();
+        if (key == null)
+            props.remove("aprsfi.apikey");
+        else
+            props.put("aprsfi.apikey", key);
     }
 }
