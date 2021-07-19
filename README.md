@@ -15,6 +15,7 @@ This is being developed for the [Saint Cloud Amateur Radio Club](https://w0sv.cl
 
 ## Setup
 
+* Download and unzip one of the provided distributions. There is no installer to run.
 * Enter your aprs.fi API key on the settings screen. (Create a free account and then get your API key from your [My Account](https://aprs.fi/account/) page.)
 * add the placefile URL to GRLevel3's Placefile Manager: http://localhost:8080/placeFiles/spotters
 
