@@ -4,23 +4,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
-import java.awt.*;
 
-public abstract class LateInitDialog extends JDialog {
+public abstract class LateInitFrame extends JFrame {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private boolean initialized = false;
 
-    public LateInitDialog(Window owner) {
-        super(owner);
-    }
-    
     protected abstract void initializeContent();
+
+    public boolean isContentInitialized() {
+        return initialized;
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+
+        if (!initialized) {
+            initialized = true;
+            logger.trace("initializing frame content");
+            initializeContent();
+            pack();
+        }
+    }
 
     @Override
     public void setVisible(boolean b) {
         if (b && !initialized) {
             initialized = true;
-            logger.trace("initializing dialog content");
+            logger.trace("initializing frame content");
             initializeContent();
             pack();
         }

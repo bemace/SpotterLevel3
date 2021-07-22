@@ -1,0 +1,1 @@
+This directory tree holds files that are needed for creating specific distributions, but are not meant to be included in the distribution as-is. (Files for inclusion as-is can go under `../src/main/dist/` .)
