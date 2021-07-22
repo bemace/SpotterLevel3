@@ -26,27 +26,12 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
         super(new BorderLayout());
         aprsfiConfig = config;
 
-        JTextPane notes = new JTextPane();
-        notes.setEditable(false);
-        notes.setEditorKit(new HTMLEditorKit());
-        notes.setText("<html><a href=\""+aprsFi +"\">aprs.fi</a> is used to obtain stations' locations."
-                +" You can create an account and generate an API key for free by following the link.</html>");
-        notes.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                try {
-                    Desktop.getDesktop().browse(e.getURL().toURI());
-                }
-                catch (Exception ex) {
-                    logger.error("couldn't open link in browser: " + e.getURL(), ex);
-                    JOptionPane.showMessageDialog(AprsFiSettingsPanel.this,"Unable to open your web browser: "+ex.getLocalizedMessage(), "Couldn't open link", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
-        add(notes, BorderLayout.NORTH);
+        add(new CallOut(CallOut.Type.INFO, "<html><a href=\""+aprsFi +"\">aprs.fi</a> is used to obtain stations' locations."
+                +" You can get your API key from your <a href=\"https://aprs.fi/account/\">My Account</a> page.</html>"), BorderLayout.SOUTH);
         
         JPanel mainPanel = new JPanel(new GridLayout(0,2));
         add(mainPanel, BorderLayout.CENTER);
-        mainPanel.add(new JLabel("aprs.fi API key"));
+        mainPanel.add(new JLabel("API key"));
         aprsfiApiKey = new JTextField(24);
         mainPanel.add(aprsfiApiKey);
     }

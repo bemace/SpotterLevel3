@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
@@ -17,6 +18,7 @@ import java.util.Properties;
 public class WebServerConfigPanel extends JPanel implements SettingsUI {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private ApplicationContext applicationContext;
     private ServletWebServerApplicationContext webServerAppCtxt;
     private TomcatServletWebServerFactory tomcatServletWebServerFactory;
     private ServerProperties webServerConfig;
@@ -25,9 +27,9 @@ public class WebServerConfigPanel extends JPanel implements SettingsUI {
 
     public WebServerConfigPanel() {
         super(new BorderLayout());
-        this.webServerAppCtxt = webServerAppCtxt;
-        this.webServerConfig = webServerConfig;
 
+        add(new CallOut(CallOut.Type.ATTENTION, "Changes to web server settings will not take affect until application is restarted."), BorderLayout.SOUTH);
+        
         JPanel mainPanel = new JPanel(new GridLayout(0,2));
         add(mainPanel, BorderLayout.CENTER);
         mainPanel.add(new JLabel("Port"));
@@ -52,16 +54,6 @@ public class WebServerConfigPanel extends JPanel implements SettingsUI {
     @Override
     public void applyChanges() {
         webServerConfig.setPort(getPort());
-        // TODO: only do this if port was actually changed
-//        webServerAppCtxt.getWebServer().shutDownGracefully(new GracefulShutdownCallback() {
-//            @Override
-//            public void shutdownComplete(GracefulShutdownResult result) {
-//                logger.debug("web server shut down, applying changes");
-//                webServerConfig.setPort(Integer.parseInt(port.getText().trim()));
-//                logger.debug("restarting web server");
-//                webServerAppCtxt.getWebServer().start();
-//            }
-//        });
     }
 
     @Override
@@ -71,6 +63,15 @@ public class WebServerConfigPanel extends JPanel implements SettingsUI {
             props.remove("server.port");
         else
             props.put("server.port", port + "");
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    @Autowired
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public ServerProperties getWebServerConfig() {
