@@ -2,7 +2,8 @@ package club.w0sv.sl3.web;
 
 import club.w0sv.grlevel3.PlaceFileWriter;
 //import club.w0sv.sl3.AprsIconSupplier;
-import club.w0sv.sl3.AprsService;
+import club.w0sv.sl3.AprsLookupException;
+import club.w0sv.sl3.LocationService;
 import club.w0sv.sl3.TrackingEntry;
 //import club.w0sv.util.IconIdentifier;
 import club.w0sv.util.QuantityUtil;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import systems.uom.common.USCustomary;
-import tech.units.indriya.quantity.Quantities;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -30,11 +30,11 @@ import java.util.Optional;
 public class PlaceFileController {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     
-    private AprsService trackingService;
+    private LocationService locationService;
 //    private AprsIconSupplier iconSupplier;
     
-    public PlaceFileController(@Autowired AprsService trackingService) {
-        this.trackingService = trackingService;
+    public PlaceFileController(@Autowired LocationService locationService) {
+        this.locationService = locationService;
 //        try {
 //            iconSupplier = new AprsIconSupplier();
 //        }
@@ -45,8 +45,9 @@ public class PlaceFileController {
     
     @RequestMapping(method= RequestMethod.GET,path = "/spotters",produces = "text/plain")
     @ResponseBody
-    public String spotterList(HttpServletResponse response) throws IOException {
+    public String spotterList(HttpServletResponse response) throws IOException, AprsLookupException {
         response.setContentType("text/plain");
+        locationService.updateIfDue();
 
 //        ServletOutputStream out = response.getOutputStream();
         StringWriter out = new StringWriter();
@@ -59,7 +60,7 @@ public class PlaceFileController {
         int basicFont = writer.defineFont(11, PlaceFileWriter.FontStyle.BOLD,"Courier New");
         int aprsPrimary = writer.defineIconFile(URI.create("localhost:8080/iconFiles/APRS-primary.png"), 21, 21, new XYPoint(10,10));
         
-        for (TrackingEntry entry : trackingService.getEntries()) {
+        for (TrackingEntry entry : locationService.getEntries()) {
             writer.startObject(entry.getLocation());
             String hoverText = entry.getAprsId().toString();
             if (entry.getCourse() != null) {

@@ -26,6 +26,8 @@ hs_err_pid*
 # Gradle
 .gradle/
 build/
+# don't ignore spring-configuration-metadata.json files
+!build/classes/java/main/META-INF
 !gradle/wrapper/*.jar
 
 # IntelliJ

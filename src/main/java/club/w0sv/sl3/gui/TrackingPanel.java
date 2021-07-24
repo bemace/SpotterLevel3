@@ -1,13 +1,15 @@
 package club.w0sv.sl3.gui;
 
-import club.w0sv.sl3.AprsLookupException;
-import club.w0sv.sl3.AprsService;
+import club.w0sv.sl3.LocationService;
 import club.w0sv.sl3.TrackingEntry;
+import club.w0sv.sl3.event.TrackingUpdateEvent;
 import club.w0sv.sl3.roster.RosterService;
 import club.w0sv.util.QuantityUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import systems.uom.common.USCustomary;
 
 import javax.measure.Quantity;
@@ -22,22 +24,28 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class TrackingPanel extends JPanel {
+@org.springframework.stereotype.Component
+public class TrackingPanel extends LateInitPanel {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private RosterService rosterService;
-    private AprsService aprsService;
+    private LocationService locationService;
+    private IconManager iconManager;
 
     private TrackingTableModel tableModel;
     private JTable table;
     private JScrollPane scrollPane;
 
-    public TrackingPanel(RosterService rosterService, AprsService aprsService) {
+    public TrackingPanel(RosterService rosterService, LocationService locationService) {
         super(new BorderLayout());
         this.rosterService = rosterService;
-        this.aprsService = aprsService;
+        this.locationService = locationService;
 
-        tableModel = new TrackingTableModel(aprsService.getEntries());
+    }
+
+    @Override
+    protected void initializeContent() {
+        tableModel = new TrackingTableModel(locationService.getEntries());
         table = new JTable(tableModel);
         scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
@@ -49,16 +57,44 @@ public class TrackingPanel extends JPanel {
         JToolBar buttonBar = new JToolBar("tracking buttons", SwingConstants.HORIZONTAL);
         buttonBar.setFloatable(false);
 
-        buttonBar.add(new RefreshTrackingData(this));
+        buttonBar.add(new DownloadLocationData());
+        buttonBar.add(new RebuildLocationTable());
 
+        for (int i = 0; i < buttonBar.getComponentCount(); i++) {
+            if (buttonBar.getComponent(i) instanceof JButton) {
+                JButton button = (JButton) buttonBar.getComponent(i);
+                button.setHideActionText(false);
+                button.setHorizontalTextPosition(SwingConstants.RIGHT);
+                button.setVerticalTextPosition(SwingConstants.CENTER);
+            }
+        }
         return buttonBar;
     }
 
-    public void refresh() throws AprsLookupException {
-        aprsService.locate(rosterService.getAprsIds());
-        tableModel = new TrackingTableModel(aprsService.getEntries());
-        table.setModel(tableModel);
-        logger.trace("reloaded");
+    @EventListener
+    synchronized void handleTrackingUpdateEvent(TrackingUpdateEvent event) {
+        logger.trace("receiving location data for {}", event.getTarget());
+        int row = tableModel.entries.indexOf(event.getData());
+        if (row >= 0) {
+            tableModel.entries.set(row,event.getData());
+            tableModel.fireTableRowsUpdated(row,row);
+            logger.trace("updated location data for {}", event.getTarget());
+        }
+        else {
+            tableModel.entries.add(event.getData());
+            tableModel.fireTableRowsInserted(tableModel.getRowCount()-1,tableModel.getRowCount()-1);
+            logger.trace("inserted location data for {}", event.getTarget());
+        }
+
+    }
+
+    public IconManager getIconManager() {
+        return iconManager;
+    }
+
+    @Autowired
+    public void setIconManager(IconManager iconManager) {
+        this.iconManager = iconManager;
     }
 
     private static class TrackingTableModel extends AbstractTableModel {
@@ -127,24 +163,48 @@ public class TrackingPanel extends JPanel {
         }
     }
 
-    private static class RefreshTrackingData extends AbstractAction {
-        private final TrackingPanel panel;
+    private class DownloadLocationData extends AbstractAction {
 
-        public RefreshTrackingData(TrackingPanel panel) {
-            super("Refresh");
-            putValue(Action.SHORT_DESCRIPTION, "Check for new tracking data");
-            this.panel = panel;
+        public DownloadLocationData() {
+            super("Download");
+            putValue(Action.SHORT_DESCRIPTION, "Allows you to manually trigger a download of new location data without waiting for the next automatic update");
+            putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Import16.gif").orElse(null));
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                locationService.locate();
+            }
+            catch (Exception ex) {
+                logger.error("error downloading location data", ex);
+                JOptionPane.showMessageDialog(TrackingPanel.this, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    private  class RebuildLocationTable extends AbstractAction {
+
+        public RebuildLocationTable() {
+            super("Rebuild Table");
+            putValue(Action.SHORT_DESCRIPTION, "Rebuilds the location table from the current location data."
+            +" (This shouldn't be necessary unless something goes wrong.)");
+            putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Refresh16.gif").orElse(null));
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                panel.refresh();
+                tableModel = new TrackingTableModel(locationService.getEntries());
+                table.setModel(tableModel);
+                logger.trace("reloaded");
             }
             catch (Exception ex) {
-                panel.logger.error("error refreshing tracking data", ex);
-                
-                JOptionPane.showMessageDialog(panel, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
+                logger.error("error rebuilding location table", ex);
+                tableModel = new TrackingTableModel(locationService.getEntries());
+                table.setModel(tableModel);
+                logger.trace("reloaded");
+                JOptionPane.showMessageDialog(TrackingPanel.this, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

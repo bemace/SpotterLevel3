@@ -7,11 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.net.URI;
+import java.time.Duration;
 import java.util.Properties;
 
 @Component
@@ -21,6 +19,7 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
     
     private AprsFiConfig aprsfiConfig;
     private JTextField aprsfiApiKey;
+    private JTextField autoUpdateInterval;
 
     public AprsFiSettingsPanel(AprsFiConfig config) {
         super(new BorderLayout());
@@ -34,6 +33,26 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
         mainPanel.add(new JLabel("API key"));
         aprsfiApiKey = new JTextField(24);
         mainPanel.add(aprsfiApiKey);
+        mainPanel.add(new JLabel("Auto-Update Interval"));
+        autoUpdateInterval = new JTextField(10);
+        autoUpdateInterval.setToolTipText("time between location update attempts (seconds)");
+        autoUpdateInterval.setInputVerifier(new InputVerifier() {
+            @Override
+            public boolean verify(JComponent input) {
+                String text = ((JTextField) input).getText();
+                try {
+                    if (text != null && !text.isEmpty()) {
+//                        Duration.parse(text.trim());
+                        Integer.parseInt(text.trim());
+                        return true;
+                    }
+                }
+                catch (Exception ex) {
+                }
+                return false;
+            }
+        });
+        mainPanel.add(autoUpdateInterval);
     }
     
     public String getApiKey() {
@@ -44,14 +63,33 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
         aprsfiApiKey.setText(key);
     }
 
+    public Duration getAutoUpdateInterval() {
+        try {
+            String str = autoUpdateInterval.getText();
+            if (str == null || str.isBlank())
+                return null;
+            
+            return Duration.ofSeconds(Integer.parseInt(str));
+        }
+        catch (Exception ex) {
+            return null;
+        }
+    }
+    
+    public void setAutoUpdateInterval(Duration duration) {
+        autoUpdateInterval.setText(duration == null ? null : duration.toSeconds()+"");
+    }
+    
     @Override
     public void displaySettings() {
         setApiKey(aprsfiConfig.getApikey());
+        setAutoUpdateInterval(aprsfiConfig.getAutoUpdateInterval());
     }
 
     @Override
     public void applyChanges() {
         aprsfiConfig.setApikey(getApiKey());
+        aprsfiConfig.setAutoUpdateInterval(getAutoUpdateInterval());
     }
     
     @Override
@@ -61,5 +99,11 @@ public class AprsFiSettingsPanel extends JPanel implements SettingsUI {
             props.remove("aprsfi.apikey");
         else
             props.put("aprsfi.apikey", key);
+        
+        Duration d = getAutoUpdateInterval();
+        if (d == null)
+            props.remove("aprsfi.auto-update-interval");
+        else
+            props.put("aprsfi.auto-update-interval", d.toString());
     }
 }
