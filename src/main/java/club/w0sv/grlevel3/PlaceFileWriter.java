@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -68,8 +69,11 @@ public class PlaceFileWriter {
     private String valueToString(Object value) {
         if (value instanceof Number)
             return String.valueOf(value);
+        else if (value instanceof HoverTextInput) {
+            return ((HoverTextInput) value).encodeForPlaceFile();
+        }
         else
-            return "\"" + String.valueOf(value).replaceAll("\\s*\\r?\\n\\s*","; ") + "\"";
+            return "\"" + String.valueOf(value) + "\"";
     }
 
     /**
@@ -97,7 +101,7 @@ public class PlaceFileWriter {
      * @param style
      * @param face
      * @return font number for using the newly-configured font in
-     * {@link #addText(GeoPoint, int, String, Optional)} calls.
+     * {@link #addText(GeoPoint, int, String, String)} calls.
      */
     public int defineFont(int heightInPixels, FontStyle style, String face) throws IOException {
         int fontNumber = nextFontNumber.getAndIncrement();
@@ -144,9 +148,9 @@ public class PlaceFileWriter {
      * @see #defineIconFile(URI, int, int, XYPoint)
      */
     public void addIcon(int iconFileNumber, int iconNumber, GeoPoint location, Quantity<Angle> rotation,
-                        Optional<String> hoverText) throws IOException {
+                        String hoverText) throws IOException {
         checkNotInObject();
-        writeLine("Icon", toDecimal(location.getLatitude()), toDecimal(location.getLongitude()), toDecimal(rotation), iconFileNumber, iconNumber, hoverText.orElse(null));
+        writeLine("Icon", toDecimal(location.getLatitude()), toDecimal(location.getLongitude()), toDecimal(rotation), iconFileNumber, iconNumber, hoverText == null ? null : new HoverTextInput(hoverText));
     }
 
     /**
@@ -159,9 +163,9 @@ public class PlaceFileWriter {
      * @param hoverText      displayed when the mouse cursor hovers over the {@code <latitude,longitude>} of the icon
      * @see #defineIconFile(URI, int, int, XYPoint)
      */
-    public void addObjectIcon(int iconFileNumber, int iconNumber, XYPoint offset, Quantity<Angle> rotation, Optional<String> hoverText) throws IOException {
+    public void addObjectIcon(int iconFileNumber, int iconNumber, XYPoint offset, Quantity<Angle> rotation, String hoverText) throws IOException {
         checkInObject();
-        writeLine("Icon", offset.getX(), offset.getY(), toDecimal(rotation), iconFileNumber, iconNumber, hoverText.orElse(null));
+        writeLine("Icon", offset.getX(), offset.getY(), toDecimal(rotation), iconFileNumber, iconNumber, hoverText == null ? null : new HoverTextInput(hoverText));
     }
     /**
      * Sets the default color of subsequence Place statements.
@@ -182,7 +186,10 @@ public class PlaceFileWriter {
      * @param comment
      */
     public void addComment(String comment) throws IOException {
-        writeLine("; " + comment);
+        if (comment == null || comment.isEmpty())
+            return;
+        
+        writeLine(Arrays.stream(comment.split("\r?\n")).map(c -> "; " + c).collect(Collectors.joining("\n")));
     }
 
     /**
@@ -192,9 +199,9 @@ public class PlaceFileWriter {
      * @param hoverText  displayed when the mouse cursor hovers over the {@code <latitude,longitude>} of the string
      * @see #defineFont(int, FontStyle, String)
      */
-    public void addText(GeoPoint location, int fontNumber, String text, Optional<String> hoverText) throws IOException {
+    public void addText(GeoPoint location, int fontNumber, String text, String hoverText) throws IOException {
         checkNotInObject();
-        writeLine("Text", toDecimal(location.getLatitude()), toDecimal(location.getLongitude()), fontNumber, text, hoverText.orElse(null));
+        writeLine("Text", toDecimal(location.getLatitude()), toDecimal(location.getLongitude()), fontNumber, text, hoverText == null ? null : new HoverTextInput(hoverText));
     }
 
     /**
@@ -204,9 +211,9 @@ public class PlaceFileWriter {
      * @param hoverText
      * @throws IOException
      */
-    public void addObjectText(XYPoint offset, int fontNumber, String text, Optional<String> hoverText) throws IOException {
+    public void addObjectText(XYPoint offset, int fontNumber, String text, String hoverText) throws IOException {
         checkInObject();
-        writeLine("Text", offset.getX(), offset.getY(), fontNumber, text, hoverText.orElse(null));
+        writeLine("Text", offset.getX(), offset.getY(), fontNumber, text, hoverText == null ? null : new HoverTextInput(hoverText));
     }
 
     private static BigDecimal toDecimal(Quantity<?> quantity) {
@@ -240,5 +247,24 @@ public class PlaceFileWriter {
     private void checkNotInObject() {
         if (inObject)
             throw new IllegalStateException("currentl in an object");
+    }
+    
+    private static class HoverTextInput {
+        private final String raw;
+        
+        public HoverTextInput(String raw) {
+            this.raw = raw;
+        }
+        
+        public String encodeForPlaceFile() {
+            if (raw == null || raw.isEmpty())
+                return null;
+            
+            String encoded = raw;
+            encoded = encoded.replace("\\", "\\\\");
+            encoded = encoded.replaceAll("\\t", "\\\\t");
+            encoded = encoded.replaceAll("\r?\n","\\\\n");
+            return "\"" + encoded + "\"";
+        }
     }
 }

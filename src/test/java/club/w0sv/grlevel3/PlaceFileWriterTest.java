@@ -3,6 +3,9 @@ package club.w0sv.grlevel3;
 import club.w0sv.util.GeoPoint;
 import club.w0sv.util.XYPoint;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import systems.uom.common.USCustomary;
 import tech.units.indriya.quantity.Quantities;
 
@@ -15,11 +18,49 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PlaceFileWriterTest {
 
+    @ParameterizedTest
+    @MethodSource("encodeEscapeCharacters_data")
+    public void encodeEscapeCharacters(String input, String expected) throws IOException {
+        StringWriter sw = new StringWriter();
+        PlaceFileWriter writer = new PlaceFileWriter(sw);
+        
+        writer.startObject(new GeoPoint(Quantities.getQuantity(new BigDecimal("45"), USCustomary.DEGREE_ANGLE),
+                Quantities.getQuantity(new BigDecimal("-94"), USCustomary.DEGREE_ANGLE)));
+        writer.addObjectText(XYPoint.NO_OFFSET, 0, "TEXT", input);
+        writer.endObject();
+
+        assertThat(sw.toString().trim().split("\r?\n")).containsExactly(
+                "Object: 45, -94",
+                "  Text: 0, 0, 0, \"TEXT\", \"" + expected + "\"",
+                "End:"
+        );
+
+    }
+    
+    private static Stream<Arguments> encodeEscapeCharacters_data() {
+        return Stream.of(
+            Arguments.of("Apple\nBanana", "Apple\\nBanana"),
+            Arguments.of("Carrot\r\nStick", "Carrot\\nStick"),
+            Arguments.of("Here\tthere", "Here\\tthere"),
+            Arguments.of("windows\\path", "windows\\\\path")
+        );
+    }
+    
+    @Test
+    public void multiLineComments() throws IOException {
+        StringWriter sw = new StringWriter();
+        PlaceFileWriter writer = new PlaceFileWriter(sw);
+
+        writer.addComment("Alpha\nBravo\r\nCharlie\n");
+        assertThat(sw.toString().trim().split("\r?\n")).containsExactly("; Alpha", "; Bravo", "; Charlie");
+    }
+    
     @Test
     public void basicSpotterList() throws IOException {
         StringWriter sw = new StringWriter();
@@ -31,17 +72,17 @@ class PlaceFileWriterTest {
         
         writer.startObject(new GeoPoint(Quantities.getQuantity(new BigDecimal("45.56000"), USCustomary.DEGREE_ANGLE),
                 Quantities.getQuantity(new BigDecimal("-94.22183"), USCustomary.DEGREE_ANGLE)));
-        writer.addObjectText(XYPoint.NO_OFFSET, 0, "K9MP-9", Optional.of("ESE @ 1mph"));
+        writer.addObjectText(XYPoint.NO_OFFSET, 0, "K9MP-9", "ESE @ 1mph");
         writer.endObject();
         
         writer.startObject(new GeoPoint(Quantities.getQuantity(new BigDecimal("45.48583"), USCustomary.DEGREE_ANGLE),
                 Quantities.getQuantity(new BigDecimal("-94.15333"), USCustomary.DEGREE_ANGLE)));
-        writer.addObjectText(XYPoint.NO_OFFSET, 0, "W9AX-9", Optional.of("N @ 23mph"));
+        writer.addObjectText(XYPoint.NO_OFFSET, 0, "W9AX-9", "N @ 23mph");
         writer.endObject();
 
         writer.startObject(new GeoPoint(Quantities.getQuantity(new BigDecimal("45.58883"), USCustomary.DEGREE_ANGLE),
                 Quantities.getQuantity(new BigDecimal("-94.13983"), USCustomary.DEGREE_ANGLE)));
-        writer.addObjectText(XYPoint.NO_OFFSET, 0, "KU5MC-9", Optional.empty());
+        writer.addObjectText(XYPoint.NO_OFFSET, 0, "KU5MC-9", null);
         writer.endObject();
 
         assertThat(sw.toString().trim().split("\r?\n")).containsExactly(readSampleFile("basic spotter list.txt"));

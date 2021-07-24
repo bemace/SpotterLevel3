@@ -43,7 +43,7 @@ public class PlaceFileController {
 //        }
     }
     
-    @RequestMapping(method= RequestMethod.GET,path = "/spotters",produces = "text/plain")
+    @RequestMapping(method= RequestMethod.GET,path = "/spotters",produces = "text/plain;charset=Windows-1252")
     @ResponseBody
     public String spotterList(HttpServletResponse response) throws IOException, AprsLookupException {
         response.setContentType("text/plain");
@@ -64,10 +64,10 @@ public class PlaceFileController {
             writer.startObject(entry.getLocation());
             String hoverText = entry.getAprsId().toString();
             if (entry.getCourse() != null) {
-                hoverText += ": " + entry.getCourse() + " @ " + QuantityUtil.setScale(entry.getSpeed().to(USCustomary.MILE_PER_HOUR), 0, RoundingMode.HALF_UP);
+                hoverText += "\n" + entry.getCourse() + " @ " + QuantityUtil.setScale(entry.getSpeed().to(USCustomary.MILE_PER_HOUR), 0, RoundingMode.HALF_UP);
             }
             
-            writer.addObjectText(new XYPoint(0,14),basicFont,entry.getAprsId().toString(), Optional.ofNullable(hoverText));
+            writer.addObjectText(new XYPoint(0,14),basicFont,entry.getAprsId().toString(), hoverText);
 //            try {
 //                IconIdentifier id = iconSupplier.getSymbolUri(entry.getSymbolCode());
 //                // FIXME: do proper URI resolution
