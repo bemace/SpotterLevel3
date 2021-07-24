@@ -262,8 +262,8 @@ public class PlaceFileWriter {
             
             String encoded = raw;
             encoded = encoded.replace("\\", "\\\\");
-            encoded = encoded.replaceAll("\\t", "\\\\t");
-            encoded = encoded.replaceAll("\r?\n","\\\\n");
+            encoded = encoded.replaceAll("\t", "\\\\\\t");
+            encoded = encoded.replaceAll("\r?\n","\\\\\\n");
             return "\"" + encoded + "\"";
         }
     }
