@@ -1,5 +1,7 @@
 package club.w0sv.sl3.gui;
 
+import club.w0sv.sl3.AprsIconSupplier;
+import club.w0sv.sl3.AprsSymbol;
 import club.w0sv.sl3.LocationService;
 import club.w0sv.sl3.TrackingEntry;
 import club.w0sv.sl3.event.TrackingUpdateEvent;
@@ -13,13 +15,16 @@ import org.springframework.context.event.EventListener;
 import systems.uom.common.USCustomary;
 
 import javax.measure.Quantity;
+import javax.measure.quantity.Angle;
 import javax.measure.quantity.Speed;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +52,7 @@ public class TrackingPanel extends LateInitPanel {
     protected void initializeContent() {
         tableModel = new TrackingTableModel(locationService.getEntries());
         table = new JTable(tableModel);
+        table.setDefaultRenderer(AprsSymbol.class,new AprsSymbolRenderer());
         scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -99,17 +105,20 @@ public class TrackingPanel extends LateInitPanel {
 
     private static class TrackingTableModel extends AbstractTableModel {
         static enum ColumnDef {
-            APRS_ID("APRS ID"),
-            LATITUDE("Latitude"),
-            LONGITUDE("Longitude"),
-            COURSE("Course"),
-            SPEED("Speed"),
-            LATEST_TIME("Time");
+            SYMBOL("Symbol", AprsSymbol.class),
+            APRS_ID("APRS ID", String.class),
+            LATITUDE("Latitude", BigDecimal.class),
+            LONGITUDE("Longitude",BigDecimal.class),
+            COURSE("Course", Angle.class),
+            SPEED("Speed",Speed.class),
+            LATEST_TIME("Time", ZonedDateTime.class);
 
             private final String heading;
+            private Class columnClass;
 
-            ColumnDef(String heading) {
+            ColumnDef(String heading, Class<?> columnClass) {
                 this.heading = heading;
+                this.columnClass = columnClass;
             }
         }
 
@@ -135,9 +144,16 @@ public class TrackingPanel extends LateInitPanel {
         }
 
         @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return ColumnDef.values()[columnIndex].columnClass;
+        }
+
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             TrackingEntry entry = entries.get(rowIndex);
             switch (ColumnDef.values()[columnIndex]) {
+                case SYMBOL:
+                    return entry.getAprsSymbol();
                 case APRS_ID:
                     return entry.getAprsId();
                 case LATITUDE:
@@ -206,6 +222,20 @@ public class TrackingPanel extends LateInitPanel {
                 logger.trace("reloaded");
                 JOptionPane.showMessageDialog(TrackingPanel.this, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+    
+    private class AprsSymbolRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            try {
+                setIcon(iconManager.getIcon((AprsSymbol) value).orElse(null));
+            }
+            catch (Exception ex) {
+                logger.error("error loading icon for " + value, ex);
+                setIcon(null);
+            }
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 }
