@@ -8,6 +8,7 @@ import club.w0sv.sl3.AprsLookupException;
 import club.w0sv.sl3.LocationService;
 import club.w0sv.sl3.TrackingEntry;
 //import club.w0sv.util.IconIdentifier;
+import club.w0sv.sl3.config.PlaceFileConfig;
 import club.w0sv.util.IconIdentifier;
 import club.w0sv.util.QuantityUtil;
 import club.w0sv.util.XYPoint;
@@ -41,6 +42,7 @@ public class PlaceFileController {
 
     private LocationService locationService;
     private AprsIconSupplier iconSupplier;
+    private PlaceFileConfig placeFileConfig;
 
     public PlaceFileController(@Autowired LocationService locationService) {
         this.locationService = locationService;
@@ -58,9 +60,9 @@ public class PlaceFileController {
         response.setContentType("text/plain");
         locationService.updateIfDue();
 
-        boolean showCallSigns = true;
-        boolean showIcons = true;
-        boolean useAprsSymbols = true;
+        boolean showCallSigns = placeFileConfig.getObjectDisplayType().includesText();
+        boolean showIcons = placeFileConfig.getObjectDisplayType().includesIcon();
+        boolean useAprsSymbols = placeFileConfig.getIconType() == PlaceFileConfig.IconType.APRS;
 
         StringWriter out = new StringWriter();
 
@@ -86,6 +88,7 @@ public class PlaceFileController {
             }
         }
 
+        writer.setColor(placeFileConfig.getTextColor());
         for (TrackingEntry entry : locationService.getEntries()) {
             writer.startObject(entry.getLocation());
             String hoverText = entry.getAprsId().toString();
@@ -119,5 +122,14 @@ public class PlaceFileController {
         out.close();
 
         return out.toString();
+    }
+
+    public PlaceFileConfig getPlaceFileConfig() {
+        return placeFileConfig;
+    }
+
+    @Autowired
+    public void setPlaceFileConfig(PlaceFileConfig placeFileConfig) {
+        this.placeFileConfig = placeFileConfig;
     }
 }
