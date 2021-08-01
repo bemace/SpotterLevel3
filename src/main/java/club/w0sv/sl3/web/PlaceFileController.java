@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -73,14 +74,12 @@ public class PlaceFileController {
         writer.setRefreshFrequency(Duration.ofMinutes(1));
         int basicFont = writer.defineFont(11, PlaceFileWriter.FontStyle.BOLD, "Courier New");
 
-        IconFileRef aprsPrimary = null;
-        IconFileRef aprsSecondary = null;
         IconFileRef coloredDots = null;
 
         if (showIcons) {
             if (useAprsSymbols) {
-                aprsPrimary = writer.defineIconFile(AprsIconSupplier.primaryTablePath, 24, 24, new XYPoint(12, 12));
-                aprsSecondary = writer.defineIconFile(AprsIconSupplier.alternateTablePath, 24, 24, new XYPoint(12, 12));
+                writer.defineIconFile(AprsIconSupplier.primaryTablePath, 24, 24, new XYPoint(12, 12));
+                writer.defineIconFile(AprsIconSupplier.alternateTablePath, 24, 24, new XYPoint(12, 12));
             }
             else {
                 URI coloredDotsUri = ServletUriComponentsBuilder.fromContextPath(request).path("iconFiles/colored_dots.png").build().toUri();
@@ -113,8 +112,15 @@ public class PlaceFileController {
                         logger.error("error adding icon for {}", entry.getAprsId(), ex);
                     }
                 }
-                else
-                    writer.addObjectIcon(coloredDots, 1, XYPoint.NO_OFFSET, Quantities.getQuantity(0, USCustomary.DEGREE_ANGLE), hoverText);
+                else {
+                    int iconNumber = 3;
+                    if (entry.getLatestTime().plus(Duration.ofMinutes(15)).isAfter(ZonedDateTime.now()))
+                        iconNumber = 1;
+                    else if (entry.getLatestTime().plus(Duration.ofMinutes(30)).isAfter(ZonedDateTime.now()))
+                        iconNumber = 2;
+                    
+                    writer.addObjectIcon(coloredDots, iconNumber, XYPoint.NO_OFFSET, Quantities.getQuantity(0, USCustomary.DEGREE_ANGLE), hoverText);
+                }
             }
             writer.endObject();
         }
