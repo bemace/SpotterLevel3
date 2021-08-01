@@ -13,8 +13,12 @@ public abstract class LateInitDialog extends JDialog {
     public LateInitDialog(Window owner) {
         super(owner);
     }
-    
-    protected abstract void initializeContent();
+
+    public LateInitDialog(Window owner, ModalityType modalityType) {
+        super(owner,modalityType);
+    }
+
+        protected abstract void initializeContent();
 
     @Override
     public void setVisible(boolean b) {

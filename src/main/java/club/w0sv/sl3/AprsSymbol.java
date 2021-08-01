@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 public class AprsSymbol {
@@ -71,8 +72,16 @@ public class AprsSymbol {
         return description;
     }
     
+    public boolean fromPrimaryTable() {
+        return tableIdentifier == PRIMARY_TABLE;
+    }
+    
+    public boolean fromAlternateTable() {
+        return tableIdentifier == ALTERNATE_TABLE;
+    }
+    
     public boolean isOverlay() {
-        return tableIdentifier != PRIMARY_TABLE && tableIdentifier != ALTERNATE_TABLE;
+        return tableIdentifier >= '0' && tableIdentifier <= '9' || tableIdentifier >= 'A' && tableIdentifier <= 'Z';
     }
 
     /**
@@ -91,12 +100,39 @@ public class AprsSymbol {
     public String toString() {
         return description;
     }
+    
+    public AprsSymbol primary() {
+        if (tableIdentifier == PRIMARY_TABLE)
+            return this;
+        else
+            return AprsSymbol.from(PRIMARY_TABLE,symbolIdentifier);
+    }
+    
+    public AprsSymbol alternate() {
+        if (tableIdentifier == ALTERNATE_TABLE)
+            return this;
+        else
+            return AprsSymbol.from(ALTERNATE_TABLE,symbolIdentifier);
+    }
 
+    public AprsSymbol withOverlay(char overlayTable) {
+        if (tableIdentifier == overlayTable)
+            return this;
+        else
+            return AprsSymbol.from(overlayTable, symbolIdentifier);
+    }
+    
     public static AprsSymbol from(char tableIndicator, char symbolIndicator) {
         AprsSymbol symbol = symbolTable.get(tableIndicator,symbolIndicator);
         if (symbol == null) {
-            LOGGER.trace("unknown APRS symbol: {}{}", tableIndicator, symbolIndicator);
-            return new AprsSymbol(tableIndicator,symbolIndicator);
+            if (isOverlayTable(tableIndicator)) {
+                AprsSymbol alternate = AprsSymbol.from(ALTERNATE_TABLE, symbolIndicator);
+                symbol = new AprsSymbol(tableIndicator, symbolIndicator, null, alternate.getDescription() + " with '" + tableIndicator + "' overlay");
+            }
+            else {
+                symbol = new AprsSymbol(tableIndicator,symbolIndicator);
+                LOGGER.trace("unknown APRS symbol table:  {}  symbol:  {}", tableIndicator, symbolIndicator);
+            }
         }
         return symbol;
     }
@@ -131,5 +167,20 @@ public class AprsSymbol {
     
     public static Map<Character,AprsSymbol> byTable(char tableIdentifier) {
         return Collections.unmodifiableMap(symbolTable.row(tableIdentifier));
+    }
+    
+    public static Map<Character,AprsSymbol> overlaysFor(char symbolIdentifier) {
+        Map<Character,AprsSymbol> overlays = new HashMap<>();
+        for (char c = '0'; c <= '9'; c++)
+            overlays.put(c, AprsSymbol.from(c,symbolIdentifier));
+
+        for (char c = 'A'; c <= 'Z'; c++)
+            overlays.put(c, AprsSymbol.from(c,symbolIdentifier));
+
+        return overlays;
+    }
+    
+    public static boolean isOverlayTable(char tableIdentifier) {
+        return tableIdentifier >= '0' && tableIdentifier <= '9' || tableIdentifier >= 'A' && tableIdentifier <= 'Z';
     }
 }
