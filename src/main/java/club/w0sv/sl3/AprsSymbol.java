@@ -12,8 +12,10 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class AprsSymbol {
@@ -21,8 +23,10 @@ public class AprsSymbol {
     private static final Table<Character, Character, AprsSymbol> symbolTable = HashBasedTable.create();
     public static final char PRIMARY_TABLE = '/';
     public static final char ALTERNATE_TABLE = '\\';
+    public static final List<Character> OVERLAY_CHARACTERS = Collections.unmodifiableList(Arrays.asList('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'));
 
-    public static final AprsSymbol UNKNOWN = new AprsSymbol('\0', '\0', null,"UNKNOWN");
+    public static final char FIRST_SYMBOL_CHAR = '!';
+    public static final char LAST_SYMBOL_CHAR = '~';
     
     @CsvBindByName(column = "Table", required = false)
     private char tableIdentifier;

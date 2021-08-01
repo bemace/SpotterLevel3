@@ -5,12 +5,14 @@ import club.w0sv.sl3.config.AprsFiConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableConfigurationProperties(AprsFiConfig.class)
+@EnableCaching
 public class MainConfiguration {
     
     @Bean
