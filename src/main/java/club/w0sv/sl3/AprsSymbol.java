@@ -12,10 +12,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Map;
 
 public class AprsSymbol {
     private static final Logger LOGGER = LoggerFactory.getLogger(AprsSymbol.class);
     private static final Table<Character, Character, AprsSymbol> symbolTable = HashBasedTable.create();
+    public static final char PRIMARY_TABLE = '/';
+    public static final char ALTERNATE_TABLE = '\\';
 
     public static final AprsSymbol UNKNOWN = new AprsSymbol('\0', '\0', null,"UNKNOWN");
     
@@ -66,10 +70,26 @@ public class AprsSymbol {
     public String getDescription() {
         return description;
     }
+    
+    public boolean isOverlay() {
+        return tableIdentifier != PRIMARY_TABLE && tableIdentifier != ALTERNATE_TABLE;
+    }
 
+    /**
+     * Gets this symbol's non-overlay counterpart.
+     * Returns {@code this} if this symbol is not an overlay.
+     * @return
+     */
+    public AprsSymbol baseSymbol() {
+        if (isOverlay())
+            return AprsSymbol.from(ALTERNATE_TABLE, symbolIdentifier);
+        else
+            return this;
+    }
+    
     @Override
     public String toString() {
-        return description + " (" + tableIdentifier + symbolIdentifier + ")";
+        return description;
     }
 
     public static AprsSymbol from(char tableIndicator, char symbolIndicator) {
@@ -107,5 +127,9 @@ public class AprsSymbol {
         catch (Exception ex) {
             LOGGER.error("error loading APRS symbol data", ex);
         }
+    }
+    
+    public static Map<Character,AprsSymbol> byTable(char tableIdentifier) {
+        return Collections.unmodifiableMap(symbolTable.row(tableIdentifier));
     }
 }

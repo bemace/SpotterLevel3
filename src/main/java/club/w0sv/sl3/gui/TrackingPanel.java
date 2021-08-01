@@ -52,7 +52,7 @@ public class TrackingPanel extends LateInitPanel {
     protected void initializeContent() {
         tableModel = new TrackingTableModel(locationService.getEntries());
         table = new JTable(tableModel);
-        table.setDefaultRenderer(AprsSymbol.class,new AprsSymbolRenderer());
+        table.setDefaultRenderer(AprsSymbol.class, new AprsSymbolRenderer());
         scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -82,13 +82,13 @@ public class TrackingPanel extends LateInitPanel {
         logger.trace("receiving location data for {}", event.getTarget());
         int row = tableModel.entries.indexOf(event.getData());
         if (row >= 0) {
-            tableModel.entries.set(row,event.getData());
-            tableModel.fireTableRowsUpdated(row,row);
+            tableModel.entries.set(row, event.getData());
+            tableModel.fireTableRowsUpdated(row, row);
             logger.trace("updated location data for {}", event.getTarget());
         }
         else {
             tableModel.entries.add(event.getData());
-            tableModel.fireTableRowsInserted(tableModel.getRowCount()-1,tableModel.getRowCount()-1);
+            tableModel.fireTableRowsInserted(tableModel.getRowCount() - 1, tableModel.getRowCount() - 1);
             logger.trace("inserted location data for {}", event.getTarget());
         }
 
@@ -108,9 +108,9 @@ public class TrackingPanel extends LateInitPanel {
             SYMBOL("Symbol", AprsSymbol.class),
             APRS_ID("APRS ID", String.class),
             LATITUDE("Latitude", BigDecimal.class),
-            LONGITUDE("Longitude",BigDecimal.class),
+            LONGITUDE("Longitude", BigDecimal.class),
             COURSE("Course", Angle.class),
-            SPEED("Speed",Speed.class),
+            SPEED("Speed", Speed.class),
             LATEST_TIME("Time", ZonedDateTime.class);
 
             private final String heading;
@@ -186,7 +186,7 @@ public class TrackingPanel extends LateInitPanel {
             putValue(Action.SHORT_DESCRIPTION, "Allows you to manually trigger a download of new location data without waiting for the next automatic update");
             putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Import16.gif").orElse(null));
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -198,13 +198,13 @@ public class TrackingPanel extends LateInitPanel {
             }
         }
     }
-    
-    private  class RebuildLocationTable extends AbstractAction {
+
+    private class RebuildLocationTable extends AbstractAction {
 
         public RebuildLocationTable() {
             super("Rebuild Table");
             putValue(Action.SHORT_DESCRIPTION, "Rebuilds the location table from the current location data."
-            +" (This shouldn't be necessary unless something goes wrong.)");
+                    + " (This shouldn't be necessary unless something goes wrong.)");
             putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Refresh16.gif").orElse(null));
         }
 
@@ -224,18 +224,23 @@ public class TrackingPanel extends LateInitPanel {
             }
         }
     }
-    
+
     private class AprsSymbolRenderer extends DefaultTableCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            AprsSymbol symbol = (AprsSymbol) value;
+            setText(null);
+            setToolTipText("<html>" + symbol.getDescription() + "<br>"
+                    + "Table: <tt>" + symbol.getTableIdentifier() + "</tt>, Symbol: <tt>" + symbol.getSymbolIdentifier() + "</tt>");
             try {
-                setIcon(iconManager.getIcon((AprsSymbol) value).orElse(null));
+                setIcon(iconManager.getIcon(symbol).orElse(null));
             }
             catch (Exception ex) {
                 logger.error("error loading icon for " + value, ex);
                 setIcon(null);
             }
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            return this;
         }
     }
 }

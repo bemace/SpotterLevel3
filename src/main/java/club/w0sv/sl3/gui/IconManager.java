@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -26,10 +28,15 @@ public class IconManager {
     
     private Optional<Icon> loadIcon(String resourceName) {
         try {
-            return Optional.of(new ImageIcon(ImageIO.read(getClass().getResource(resourceName))));
+            URL iconUrl = getClass().getResource(resourceName);
+            if (iconUrl == null) {
+                logger.debug("no icon found with name {}", resourceName);
+                return Optional.empty();
+            }
+            return Optional.of(new ImageIcon(ImageIO.read(iconUrl)));
         }
         catch (Exception ex) {
-            logger.error("error icon from {}", resourceName, ex);
+            logger.error("error loading icon from {}", resourceName, ex);
             return Optional.empty();
         }
     }
@@ -57,6 +64,12 @@ public class IconManager {
     
     public Optional<Icon> getIcon(AprsSymbol symbol) {
         String resourceName = "/icons/APRS/symbol-" + ((int) symbol.getSymbolIdentifier()) + "-" + ((int) symbol.getTableIdentifier()) + ".png";
-        return getIcon(resourceName);
+        Optional<Icon> icon = getIcon(resourceName);
+        if (icon.isPresent())
+            return icon;
+        else if (symbol.isOverlay())
+            return getIcon(symbol.baseSymbol());
+        else
+            return getIcon("/icons/APRS/no-symbol.png");
     }
 }
