@@ -1,0 +1,189 @@
+Table,Symbol,GPSxyz,Description
+/,!,BB,"Police, Sheriff"
+/,"\"",BC,
+/,#,BD,Digi
+/,$,BE,Phone
+/,%,BF,DX Cluster
+/,&,BG,HF Gateway
+/,',BH,Small plane
+/,(,BI,Mobile Satelite Station
+/,),BJ,WheelChair
+/,*,BK,Snowmobile
+/,+,BL,Red Cross
+/,",",BM,Boy Scout
+/,-,BN,Home
+/,.,BO,X
+/,/,BP,Red Dot
+/,0,PO,Circle (0)
+/,1,P1,Circle (1)
+/,2,P2,Circle (2)
+/,3,P3,Circle (3)
+/,4,P4,Circle (4)
+/,5,P5,Circle (5)
+/,6,P6,Circle (6)
+/,7,P7,Circle (7)
+/,8,P8,Circle (8)
+/,9,P9,Circle (9)
+/,:,MR,Fire
+/,;,MS,Campground
+/,<,MT,Motorcycle
+/,=,MU,Rail Engine
+/,>,MV,Car
+/,?,MW,File Server
+/,@,MX,Hurricane (future)
+/,A,PA,Aid station
+/,B,PB,BBS
+/,C,PC,Canoe
+/,D,PD,
+/,E,PE,Eyeball
+/,F,PF,Tractor
+/,G,PG,Grid Square
+/,H,PH,Hotel
+/,I,PI,TCP/IP
+/,J,PJ,
+/,K,PK,School
+/,L,PL,User Log-ON
+/,M,PM,MacAPRS
+/,N,PN,NTS Station
+/,O,PO,Balloon
+/,P,PP,Police
+/,Q,PQ,TBD
+/,R,PR,Recreational Vehicle
+/,S,PS,Shuttle
+/,T,PT,SSTV
+/,U,PU,Bus
+/,V,PV,ATV
+/,W,PW,Weather Service
+/,X,PX,Helicopter
+/,Y,PY,Yacht
+/,Z,PZ,WinAPRS
+/,[,HS,Jogger
+/,"\\",HT,Triangle
+/,],HU,PBBS
+/,^,HV,Large Plane
+/,_,HW,Weather Station
+/,`,HX,Dish Antenna
+/,a,LA,Ambulance
+/,b,LB,Bike
+/,c,LC,ICS Command Post
+/,d,LD,Fire Station
+/,e,LE,Horse
+/,f,LF,Fire Truck
+/,g,LG,Glider
+/,h,LH,Hospital
+/,i,LI,IOTA
+/,j,LJ,Jeep
+/,k,LK,Truck
+/,l,LL,Laptop
+/,m,LM,Mic-E Reporter
+/,n,LN,Node
+/,o,LO,EOC
+/,p,LP,Rover
+/,q,LQ,Grid Square
+/,r,LR,Antenna
+/,s,LS,Power Boat
+/,t,LT,Truck Stop
+/,u,LU,Truck (18-wheeler)
+/,v,LV,Van
+/,w,LW,Water Station
+/,x,LX,XAPRS
+/,y,LY,Yagi
+/,z,LZ,Shelter
+/,{,J1,
+/,|,J2,TNC Stream Sw
+/,},J3,
+/,~,J4,TNC Stream Sw
+"\\",!,OB,Emergency
+"\\","\"",OC,
+"\\",#,OD,No. Digi
+"\\",$,OE,Bank
+"\\",%,OF,
+"\\",&,OG,No Diamond
+"\\",',OH,Crash site
+"\\",(,OI,Cloudy
+"\\",),OJ,Firenet MEO symbol (MODIS Earth observation)
+"\\",*,OK,Snow
+"\\",+,OL,Church
+"\\",",",OM,Girl Scout
+"\\",-,ON,Home (HF)
+"\\",.,OO,Unknown Position
+"\\",/,OP,Destination
+"\\",0,A0,No. Circle
+"\\",1,A1,
+"\\",2,A2,
+"\\",3,A3,
+"\\",4,A4,
+"\\",5,A5,
+"\\",6,A6,
+"\\",7,A7,
+"\\",8,A8,
+"\\",9,A9,
+"\\",:,NR,Hail
+"\\",;,NS,Park
+"\\",<,NT,Gale Flag
+"\\",=,NU,
+"\\",>,NV,No. Car
+"\\",?,NW,Info Kiosk
+"\\",@,NX,Hurricane
+"\\",A,AA,No. Box
+"\\",B,AB,Blowing snow
+"\\",C,AC,Coast Guard
+"\\",D,AD,Drizzle
+"\\",E,AE,Smoke
+"\\",F,AF,Freezing rain
+"\\",G,AG,Snow shower
+"\\",H,AH,Haze
+"\\",I,AI,Rain shower
+"\\",J,AJ,Lightning
+"\\",K,AK,Kenwood
+"\\",L,AL,Lighthouse
+"\\",M,AM,
+"\\",N,AN,Navigation buoy
+"\\",O,AO,Rocket
+"\\",P,AP,Parking
+"\\",Q,AQ,Earthquake
+"\\",R,AR,Restaurant
+"\\",S,AS,Sat/Pacsat
+"\\",T,AT,Thunderstorm
+"\\",U,AU,Sunny
+"\\",V,AV,VORTAC
+"\\",W,AW,No. WXS
+"\\",X,AX,Pharmacy
+"\\",Y,AY,
+"\\",Z,AZ,
+"\\""\\",[,DS,Wall cloud
+"\\","\\",DT,
+"\\",],DU,
+"\\",^,DV,No. plane
+"\\",_,DW,No. WX Stn
+"\\",`,DX,Rain
+"\\",a,SA,No. diamond
+"\\",b,SB,blowing dust
+"\\",c,SC,No. CivDef
+"\\",d,SD,DX Spot
+"\\",e,SE,sleet
+"\\",f,SF,Funnel cloud
+"\\",g,SG,gale
+"\\",h,SH,HAM store
+"\\",i,SI,No. Blk Box
+"\\",j,SJ,Work Zone
+"\\",k,SK,SUV
+"\\",l,SL,Area Locations
+"\\",m,SM,Milepost
+"\\",n,SN,No. Triangle
+"\\",o,SO,Circle sm
+"\\",p,SP,Partly cloudy
+"\\",q,SQ,
+"\\",r,SR,Restrooms
+"\\",s,SS,No. boat
+"\\",t,ST,Tornado
+"\\",u,SU,No. Truck
+"\\",v,SV,No. Van
+"\\",w,SW,flooding
+"\\",x,SX,
+"\\",y,SY,Skywarn
+"\\",z,SZ,No. shelter
+"\\",{,Q1,Fog
+"\\",|,Q2,TNC Stream SW
+"\\",},Q3,
+"\\",~,Q4,TNC Stream SW

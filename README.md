@@ -24,6 +24,7 @@ Submit bug reports and feature requests on GitHub: https://github.com/bemace/Spo
 
 ## Icon Attributions
 This program uses third-party icons in accordance with their creators' licenses:
+ - APRS icons from [APRS Direct](https://www.aprsdirect.com) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
  - created by [Google](https://fonts.google.com/icons) under [Apache License v2.0](https://www.apache.org/licenses/LICENSE-2.0.html)
  - [File:info.png](https://commons.wikimedia.org/w/index.php?curid=5281797) by [Kontos](https://commons.wikimedia.org/w/index.php?title=User:Kontos&action=edit&redlink=1) is licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0?ref=ccsearch&atype=rich)
  - File:attention.png under CC0 1.0

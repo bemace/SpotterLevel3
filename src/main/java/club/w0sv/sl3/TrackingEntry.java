@@ -21,7 +21,7 @@ public class TrackingEntry {
     private Quantity<Speed> speed;
     
     private String message;
-    private String symbolCode;
+    private AprsSymbol aprsSymbol;
 
     public AprsId getAprsId() {
         return aprsId;
@@ -87,12 +87,12 @@ public class TrackingEntry {
         this.message = message;
     }
 
-    public String getSymbolCode() {
-        return symbolCode;
+    public AprsSymbol getAprsSymbol() {
+        return aprsSymbol;
     }
 
-    public void setSymbolCode(String symbolCode) {
-        this.symbolCode = symbolCode;
+    public void setAprsSymbol(AprsSymbol symbol) {
+        this.aprsSymbol = symbol;
     }
 
     @Override

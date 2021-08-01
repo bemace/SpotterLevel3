@@ -12,10 +12,14 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 public class PlaceFileWriter {
     private static final int MIN_FONT_NUMBER = 1;
@@ -28,6 +32,7 @@ public class PlaceFileWriter {
     private AtomicInteger nextFontNumber = new AtomicInteger(MIN_FONT_NUMBER);
     private AtomicInteger nextIconFileNumber = new AtomicInteger(MIN_ICON_FILE_NUMBER);
     private boolean inObject = false;
+    private final Map<URI,IconFileRef> index = new HashMap<>();
 
     public PlaceFileWriter(Writer writer) {
         this.writer = writer;
@@ -67,11 +72,14 @@ public class PlaceFileWriter {
     }
 
     private String valueToString(Object value) {
+        // TODO: better system than using instanceof
         if (value instanceof Number)
             return String.valueOf(value);
         else if (value instanceof HoverTextInput) {
             return ((HoverTextInput) value).encodeForPlaceFile();
         }
+        else if (value instanceof IconFileRef)
+            return ((IconFileRef) value).getFileNumber() + "";
         else
             return "\"" + String.valueOf(value) + "\"";
     }
@@ -114,6 +122,22 @@ public class PlaceFileWriter {
     }
 
     /**
+     * 
+     * @param iconFilePath relative to application's base context URI
+     * @param iconWidth
+     * @param iconHeight
+     * @param hotspot    offset for center of icons in this icon file.
+     *                   X value must be between {@code 0} and {@code iconWidth - 1};
+     *                   Y value must be between {@code 0} and {@code iconHeight - 1}.
+     * @return handle for referencing this icon file in an {@code addIcon} call.
+     */
+    public IconFileRef defineIconFile(String iconFilePath, int iconWidth, int iconHeight, XYPoint hotspot)
+            throws IOException {
+        URI iconFileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path(iconFilePath).build().toUri();
+        return defineIconFile(iconFileUri,iconWidth,iconHeight,hotspot);
+    }
+    
+    /**
      * Adds an icon file which can be used to show icons on the map. A maximum of eight icon files may be added
      * in a single place file.
      * <p>Icon files are composed of any number of icons of the same width and height,
@@ -125,19 +149,34 @@ public class PlaceFileWriter {
      * @param hotspot    offset for center of icons in this icon file.
      *                   X value must be between {@code 0} and {@code iconWidth - 1};
      *                   Y value must be between {@code 0} and {@code iconHeight - 1}.
-     * @return the icon file number for referencing this icon file in an {@code addIcon} call.
+     * @return handle for referencing this icon file in an {@code addIcon} call.
      * @throws IOException
      */
-    public int defineIconFile(URI uri, int iconWidth, int iconHeight, XYPoint hotspot) throws IOException {
+    public IconFileRef defineIconFile(URI uri, int iconWidth, int iconHeight, XYPoint hotspot) throws IOException {
+        IconFileRef ref = index.get(uri);
+        if (ref != null)
+            return ref;
+        
         int iconFileNumber = nextIconFileNumber.getAndIncrement();
         if (iconFileNumber > MAX_ICON_FILE_NUMBER)
             throw new IndexOutOfBoundsException("too many icon files -- place files may contain a maximum of " + MAX_ICON_FILE_NUMBER + " icon files");
 
-        // TODO: recognize duplicates and return existing
         writeLine("IconFile", iconFileNumber, iconWidth, iconHeight, hotspot.getX(), hotspot.getY(), uri);
-        return iconFileNumber;
+        ref = IconFileRef.valueOf(iconFileNumber);
+        index.put(uri, ref);
+        return ref;
     }
 
+    public Optional<IconFileRef> getIconFileRef(String iconFilePath) {
+        URI iconFileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path(iconFilePath).build().toUri();
+        return getIconFileRef(iconFileUri);
+    }
+    
+    public Optional<IconFileRef> getIconFileRef(URI iconFileUri) {
+        IconFileRef ref = index.get(iconFileUri);
+        return Optional.ofNullable(ref);
+    }
+    
     /**
      * @param iconFileNumber from earlier {@code addIconFile} call
      * @param iconNumber     number of the icon to draw, from {@code 1} to the number of icons in the icon file.
@@ -155,7 +194,7 @@ public class PlaceFileWriter {
 
     /**
      *
-     * @param iconFileNumber from earlier {@code addIconFile} call
+     * @param iconFileRef    from earlier {@code addIconFile} call
      * @param iconNumber     number of the icon to draw, from {@code 1} to the number of icons in the icon file.
      *                       Icons in an icon file are numbered from left to right, top to bottom.
      * @param offset       
@@ -163,9 +202,9 @@ public class PlaceFileWriter {
      * @param hoverText      displayed when the mouse cursor hovers over the {@code <latitude,longitude>} of the icon
      * @see #defineIconFile(URI, int, int, XYPoint)
      */
-    public void addObjectIcon(int iconFileNumber, int iconNumber, XYPoint offset, Quantity<Angle> rotation, String hoverText) throws IOException {
+    public void addObjectIcon(IconFileRef iconFileRef, int iconNumber, XYPoint offset, Quantity<Angle> rotation, String hoverText) throws IOException {
         checkInObject();
-        writeLine("Icon", offset.getX(), offset.getY(), toDecimal(rotation), iconFileNumber, iconNumber, hoverText == null ? null : new HoverTextInput(hoverText));
+        writeLine("Icon", offset.getX(), offset.getY(), toDecimal(rotation), iconFileRef, iconNumber, hoverText == null ? null : new HoverTextInput(hoverText));
     }
     /**
      * Sets the default color of subsequence Place statements.

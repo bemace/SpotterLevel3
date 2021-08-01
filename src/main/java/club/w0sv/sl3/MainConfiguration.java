@@ -2,15 +2,19 @@ package club.w0sv.sl3;
 
 import club.w0sv.aprsfi.AprsFiClient;
 import club.w0sv.sl3.config.AprsFiConfig;
+import club.w0sv.sl3.config.PlaceFileConfig;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-@EnableConfigurationProperties(AprsFiConfig.class)
+@EnableConfigurationProperties({AprsFiConfig.class, PlaceFileConfig.class })
+@EnableCaching
 public class MainConfiguration {
     
     @Bean

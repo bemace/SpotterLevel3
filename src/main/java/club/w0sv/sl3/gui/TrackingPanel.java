@@ -1,5 +1,7 @@
 package club.w0sv.sl3.gui;
 
+import club.w0sv.sl3.AprsIconSupplier;
+import club.w0sv.sl3.AprsSymbol;
 import club.w0sv.sl3.LocationService;
 import club.w0sv.sl3.TrackingEntry;
 import club.w0sv.sl3.event.TrackingUpdateEvent;
@@ -13,13 +15,16 @@ import org.springframework.context.event.EventListener;
 import systems.uom.common.USCustomary;
 
 import javax.measure.Quantity;
+import javax.measure.quantity.Angle;
 import javax.measure.quantity.Speed;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,6 +52,7 @@ public class TrackingPanel extends LateInitPanel {
     protected void initializeContent() {
         tableModel = new TrackingTableModel(locationService.getEntries());
         table = new JTable(tableModel);
+        table.setDefaultRenderer(AprsSymbol.class, new AprsSymbolRenderer());
         scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -76,13 +82,13 @@ public class TrackingPanel extends LateInitPanel {
         logger.trace("receiving location data for {}", event.getTarget());
         int row = tableModel.entries.indexOf(event.getData());
         if (row >= 0) {
-            tableModel.entries.set(row,event.getData());
-            tableModel.fireTableRowsUpdated(row,row);
+            tableModel.entries.set(row, event.getData());
+            tableModel.fireTableRowsUpdated(row, row);
             logger.trace("updated location data for {}", event.getTarget());
         }
         else {
             tableModel.entries.add(event.getData());
-            tableModel.fireTableRowsInserted(tableModel.getRowCount()-1,tableModel.getRowCount()-1);
+            tableModel.fireTableRowsInserted(tableModel.getRowCount() - 1, tableModel.getRowCount() - 1);
             logger.trace("inserted location data for {}", event.getTarget());
         }
 
@@ -99,17 +105,20 @@ public class TrackingPanel extends LateInitPanel {
 
     private static class TrackingTableModel extends AbstractTableModel {
         static enum ColumnDef {
-            APRS_ID("APRS ID"),
-            LATITUDE("Latitude"),
-            LONGITUDE("Longitude"),
-            COURSE("Course"),
-            SPEED("Speed"),
-            LATEST_TIME("Time");
+            SYMBOL("Symbol", AprsSymbol.class),
+            APRS_ID("APRS ID", String.class),
+            LATITUDE("Latitude", BigDecimal.class),
+            LONGITUDE("Longitude", BigDecimal.class),
+            COURSE("Course", Angle.class),
+            SPEED("Speed", Speed.class),
+            LATEST_TIME("Time", ZonedDateTime.class);
 
             private final String heading;
+            private Class columnClass;
 
-            ColumnDef(String heading) {
+            ColumnDef(String heading, Class<?> columnClass) {
                 this.heading = heading;
+                this.columnClass = columnClass;
             }
         }
 
@@ -135,9 +144,16 @@ public class TrackingPanel extends LateInitPanel {
         }
 
         @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return ColumnDef.values()[columnIndex].columnClass;
+        }
+
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             TrackingEntry entry = entries.get(rowIndex);
             switch (ColumnDef.values()[columnIndex]) {
+                case SYMBOL:
+                    return entry.getAprsSymbol();
                 case APRS_ID:
                     return entry.getAprsId();
                 case LATITUDE:
@@ -170,7 +186,7 @@ public class TrackingPanel extends LateInitPanel {
             putValue(Action.SHORT_DESCRIPTION, "Allows you to manually trigger a download of new location data without waiting for the next automatic update");
             putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Import16.gif").orElse(null));
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -182,13 +198,13 @@ public class TrackingPanel extends LateInitPanel {
             }
         }
     }
-    
-    private  class RebuildLocationTable extends AbstractAction {
+
+    private class RebuildLocationTable extends AbstractAction {
 
         public RebuildLocationTable() {
             super("Rebuild Table");
             putValue(Action.SHORT_DESCRIPTION, "Rebuilds the location table from the current location data."
-            +" (This shouldn't be necessary unless something goes wrong.)");
+                    + " (This shouldn't be necessary unless something goes wrong.)");
             putValue(Action.SMALL_ICON, iconManager.getJlfgrIcon("/toolbarButtonGraphics/general/Refresh16.gif").orElse(null));
         }
 
@@ -206,6 +222,25 @@ public class TrackingPanel extends LateInitPanel {
                 logger.trace("reloaded");
                 JOptionPane.showMessageDialog(TrackingPanel.this, ExceptionUtils.getRootCauseMessage(ex), "Refresh failed", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private class AprsSymbolRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            AprsSymbol symbol = (AprsSymbol) value;
+            setText(null);
+            setToolTipText("<html>" + symbol.getDescription() + "<br>"
+                    + "Table: <tt>" + symbol.getTableIdentifier() + "</tt>, Symbol: <tt>" + symbol.getSymbolIdentifier() + "</tt>");
+            try {
+                setIcon(iconManager.getIcon(symbol).orElse(null));
+            }
+            catch (Exception ex) {
+                logger.error("error loading icon for " + value, ex);
+                setIcon(null);
+            }
+            return this;
         }
     }
 }

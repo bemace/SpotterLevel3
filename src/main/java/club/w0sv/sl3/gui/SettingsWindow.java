@@ -28,6 +28,7 @@ public class SettingsWindow extends LateInitFrame implements SettingsUI {
 
     private AprsFiSettingsPanel aprsFiSettingsPanel;
     private WebServerConfigPanel webServerConfigPanel;
+    private PlaceFileConfigPanel placeFileConfigPanel;
     private Set<SettingsUI> configPanels = new HashSet<>();
 
     public SettingsWindow(AprsFiConfig aprsfiConfig) {
@@ -51,6 +52,9 @@ public class SettingsWindow extends LateInitFrame implements SettingsUI {
 
         aprsFiSettingsPanel.setBorder(BorderFactory.createTitledBorder(aprsFiSettingsPanel.getBorder(), "aprs.fi"));
         mainPanel.add(aprsFiSettingsPanel);
+        
+        placeFileConfigPanel.setBorder(BorderFactory.createTitledBorder(placeFileConfigPanel.getBorder(), "Place File Options"));
+        mainPanel.add(placeFileConfigPanel);
         
         JPanel buttonBar = new JPanel();
         JButton okButton = new JButton(new OkAction());
@@ -122,6 +126,17 @@ public class SettingsWindow extends LateInitFrame implements SettingsUI {
         configPanels.remove(this.aprsFiSettingsPanel);
         this.aprsFiSettingsPanel = aprsFiSettingsPanel;
         configPanels.add(aprsFiSettingsPanel);
+    }
+
+    public PlaceFileConfigPanel getPlaceFileConfigPanel() {
+        return placeFileConfigPanel;
+    }
+
+    @Autowired
+    public void setPlaceFileConfigPanel(PlaceFileConfigPanel placeFileConfigPanel) {
+        configPanels.remove(this.placeFileConfigPanel);
+        this.placeFileConfigPanel = placeFileConfigPanel;
+        configPanels.add(placeFileConfigPanel);
     }
 
     private class OkAction extends AbstractAction {

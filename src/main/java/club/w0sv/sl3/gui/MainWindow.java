@@ -15,6 +15,7 @@ public class MainWindow extends LateInitFrame {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private SettingsWindow settingsWindow;
     private LocationService locationService;
+    private IconManager iconManager;
 
     private JMenuBar menuBar;
     private RosterPanel rosterPanel;
@@ -37,6 +38,10 @@ public class MainWindow extends LateInitFrame {
         menuBar.add(fileMenu);
         fileMenu.add(new SettingsAction());
         fileMenu.add(new ExitAction());
+        
+        JMenu aprsMenu = new JMenu("APRS", false);
+        menuBar.add(aprsMenu);
+        aprsMenu.add(new AprsSymbolIndexAction());
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -62,6 +67,15 @@ public class MainWindow extends LateInitFrame {
         this.trackingPanel = trackingPanel;
     }
 
+    public IconManager getIconManager() {
+        return iconManager;
+    }
+
+    @Autowired
+    public void setIconManager(IconManager iconManager) {
+        this.iconManager = iconManager;
+    }
+
     private class SettingsAction extends AbstractAction {
         
         public SettingsAction() {
@@ -81,6 +95,27 @@ public class MainWindow extends LateInitFrame {
             }
         }
     }
+    
+    private class AprsSymbolIndexAction extends AbstractAction {
+        public AprsSymbolIndexAction() {
+            super("APRS Symbol Index");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                AprsIconBrowser window = new AprsIconBrowser(MainWindow.this);
+                window.setIconManager(iconManager);
+                window.pack();
+                window.setVisible(true);
+            }
+            catch (Exception ex) {
+                logger.error("error loading APRS symbol index window", ex);
+                JOptionPane.showMessageDialog(MainWindow.this,"error: ", ex.getLocalizedMessage(),JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
     private static class ExitAction extends AbstractAction {
 
         public ExitAction() {

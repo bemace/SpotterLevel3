@@ -74,7 +74,7 @@ public class LocationService {
                 t.setLatestTime(entry.getLasttime().atZone(ZoneId.systemDefault()));
                 t.setArrived(entry.getTime().atZone(ZoneId.systemDefault()));
                 t.setMessage(entry.getComment());
-                t.setSymbolCode(entry.getSymbol());
+                t.setAprsSymbol(AprsSymbol.from(entry.getSymbol().charAt(0),entry.getSymbol().charAt(1)));
                 trackingEntries.put(id, t);
                 logger.debug("{} {}", id, t);
 
